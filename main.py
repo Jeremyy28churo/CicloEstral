@@ -1361,13 +1361,14 @@ def renderizar_simulador():
           ];
           const layout = {{
             template: 'plotly_dark', plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
-            margin: {{l: 60, r: 20, t: 30, b: 50}},
+            margin: {{l: 50, r: 15, t: 90, b: 50}},
             xaxis: {{title: 'Días del Ciclo', range: [0, maxDays], gridcolor: 'rgba(255,255,255,0.05)', automargin: true}},
             yaxis: {{title: 'Concentración (%)', range: [0, 105], gridcolor: 'rgba(255,255,255,0.05)', automargin: true}},
-            legend: {{orientation: 'h', yanchor: 'bottom', y: 1.02, xanchor: 'right', x: 1}},
+            legend: {{orientation: 'h', yanchor: 'bottom', y: 1.05, xanchor: 'center', x: 0.5}},
             shapes: [{{type: 'line', x0: 0, x1: 0, y0: 0, y1: 105, line: {{color: '#FFF', width: 3}}}}],
             annotations: [{{
-              x: 0, y: 105, text: 'DÍA 0.0', showarrow: false,
+              xref: 'paper', yref: 'paper',
+              x: 0.02, y: 0.98, text: 'DÍA 0.0', showarrow: false,
               xanchor: 'left', yanchor: 'top', 
               font: {{color: '#FFF', size: 22}},
               bgcolor: 'rgba(0,0,0,0.8)', bordercolor: '#FFF', borderpad: 6, borderwidth: 1, bordercolor: '#30363d'
@@ -1401,7 +1402,7 @@ def renderizar_simulador():
         
           Plotly.update('plotlyChart', {{x: [x,x,x,x,x], y: [fsh,lh,e2,p4,mat]}}, {{
             'shapes[0].x0': day, 'shapes[0].x1': day,
-            'annotations[0].x': day, 'annotations[0].text': 'DÍA ' + day.toFixed(1)
+            'annotations[0].text': 'DÍA ' + day.toFixed(1)
           }});
         }}
       
@@ -1432,7 +1433,7 @@ def renderizar_simulador():
     </html>
     """
   
-    components.html(html_code, height=850)
+    components.html(html_code, height=1050, scrolling=True)
   
 
 if st.session_state.etapa_actual == "portada":
