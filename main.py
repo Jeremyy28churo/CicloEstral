@@ -20,7 +20,7 @@ if 'seccion_activa' not in st.session_state:
   st.session_state.seccion_activa = 'Fases del Ciclo Estral'
 
 # Configuración de página
-st.set_page_config(page_title="Granja Digital - Fisiología Reproductiva", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Granja Digital - Fisiología Reproductiva", layout="wide", initial_sidebar_state="collapsed")
 
 # --- CUSTOM CSS (GLASSMORPHISM PRO THEME) ---
 st.markdown("""
@@ -31,6 +31,10 @@ st.markdown("""
   #MainMenu {visibility: hidden;}
   footer {visibility: hidden;}
   header {visibility: hidden;}
+
+  /* Ocultar boton toggle del sidebar — sidebar eliminado del diseno */
+  [data-testid="collapsedControl"] {display: none !important;}
+  [data-testid="stSidebar"] {display: none !important;}
   
   /* Variables y Base */
   [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
@@ -822,32 +826,71 @@ def renderizar_simulador():
     if st.button("LABORATORIO DE SIMULACION", key="btn_nav_simul", on_click=_ir_simulador, use_container_width=True):
       pass
 
-  st.markdown("---")
+  # --- PARAMETROS FISIOLOGICOS — lectura directa desde session_state ---
+  # La especie es establecida por st_clickable_images en la pantalla de
+  # seleccion y persiste en st.session_state.especie_seleccionada.
+  # Este bloque NO solicita al usuario que elija especie nuevamente.
 
-  # SIDEBAR: SELECTOR LATERAL DE ESPECIE
-  with st.sidebar:
-    st.markdown("### Especie de Estudio")
-  
-    opciones_especies = ["Bovino", "Porcino", "Ovino", "Caprino", "Equino"]
-    
-    # Fallback de seguridad si llega a ser None por alguna recarga
-    if st.session_state.especie_seleccionada not in opciones_especies:
-      st.session_state.especie_seleccionada = "Bovino"
-      
-    if "temp_especie_seleccionada" not in st.session_state:
-      st.session_state.temp_especie_seleccionada = st.session_state.especie_seleccionada
-    
-    st.selectbox("", opciones_especies, key="temp_especie_seleccionada", on_change=sync_state, args=("temp_especie_seleccionada", "especie_seleccionada"))
-    species = st.session_state.especie_seleccionada
-  
-    data = SPECIES_DATA[species]
-  
-    st.markdown("---")
-    st.markdown("### Parámetros Fisiológicos")
-    st.info(f"**Duración Ciclo:** {data['cycle_duration']} días")
-    st.success(f"**Momento de Ovulación:** {data['ovulation_timing']}")
-    if data['maternal_recognition'] and data['maternal_recognition'] != "?":
-      st.warning(f"**Reconocimiento Materno:** {data['maternal_recognition']}")
+  # Fallback de seguridad: si session_state llegara vacio por recarga directa
+  _especies_validas = ["Bovino", "Porcino", "Ovino", "Caprino", "Equino"]
+  if st.session_state.especie_seleccionada not in _especies_validas:
+    st.session_state.especie_seleccionada = "Bovino"
+
+  species = st.session_state.especie_seleccionada
+  data = SPECIES_DATA[species]
+
+  # Tarjetas de parametros en tres columnas responsivas (se apilan en movil)
+  with st.expander("Parametros Fisiologicos — " + species, expanded=False):
+    pf_col1, pf_col2, pf_col3 = st.columns(3)
+
+    with pf_col1:
+      st.markdown(f"""
+      <div style='background: rgba(76,175,80,0.08); border-left: 3px solid #4CAF50;
+                  padding: 14px 16px; border-radius: 0 10px 10px 0;'>
+        <p style='margin:0 0 4px 0; font-size:0.75rem; color:#90A4AE;
+                  text-transform:uppercase; letter-spacing:1px; font-weight:600;'>
+          Duracion del Ciclo
+        </p>
+        <p style='margin:0; font-size:1.25rem; font-weight:800; color:#4CAF50;'>
+          {data['cycle_duration']} dias
+        </p>
+      </div>
+      """, unsafe_allow_html=True)
+
+    with pf_col2:
+      st.markdown(f"""
+      <div style='background: rgba(0,188,212,0.08); border-left: 3px solid #00BCD4;
+                  padding: 14px 16px; border-radius: 0 10px 10px 0;'>
+        <p style='margin:0 0 4px 0; font-size:0.75rem; color:#90A4AE;
+                  text-transform:uppercase; letter-spacing:1px; font-weight:600;'>
+          Momento de Ovulacion
+        </p>
+        <p style='margin:0; font-size:0.95rem; font-weight:600; color:#E8F5E9;
+                  line-height:1.4;'>
+          {data['ovulation_timing']}
+        </p>
+      </div>
+      """, unsafe_allow_html=True)
+
+    with pf_col3:
+      rec_mat = data['maternal_recognition']
+      color_rec = "#FF9933" if rec_mat and rec_mat != "?" else "#546E7A"
+      texto_rec = rec_mat if rec_mat and rec_mat != "?" else "No determinado"
+      st.markdown(f"""
+      <div style='background: rgba(255,153,51,0.08); border-left: 3px solid {color_rec};
+                  padding: 14px 16px; border-radius: 0 10px 10px 0;'>
+        <p style='margin:0 0 4px 0; font-size:0.75rem; color:#90A4AE;
+                  text-transform:uppercase; letter-spacing:1px; font-weight:600;'>
+          Reconocimiento Materno
+        </p>
+        <p style='margin:0; font-size:1.05rem; font-weight:700; color:{color_rec};'>
+          {texto_rec}
+        </p>
+      </div>
+      """, unsafe_allow_html=True)
+
+  st.markdown("<br>", unsafe_allow_html=True)
+
   
   # --- SECCIÓN 1: FASES DEL CICLO DINÁMICAS ---
   if st.session_state.seccion_activa == "Fases del Ciclo Estral":
