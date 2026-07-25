@@ -637,15 +637,125 @@ SPECIES_DATA = {
       "**Regla Clínica:** IA/Monta DURANTE el estro (cada 48 h mientras esté en celo y se detecte folículo >35 mm).",
       "**Estacionalidad:** Poliéstrica estacional de días largos."
     ]
+  },
+  "Ave": {
+    "cycle_duration": 26,
+    "cycle_unit": "horas",
+    "estrus_days": None,
+    "lh_peak": 6,
+    "ovulation_timing": "6-8 h post-oviposición anterior",
+    "maternal_recognition": "N/A",
+    "phases": [{"name": "Post-oviposición", "range": (0, 2), "color": "#FF9933"},
+          {"name": "Pico LH / Ovulación", "range": (2, 8), "color": "#FF3366"},
+          {"name": "Formación del huevo", "range": (8, 24), "color": "#3399FF"},
+          {"name": "Oviposición", "range": (24, 26.01), "color": "#00CC99"}],
+    "checklist": [
+      "Programa de luz 16L:8O activo y estable",
+      "Postura en serie de 5-7 días consecutivos + 1 día de pausa",
+      "Jerarquía folicular intacta (F1→F2→F3→F4→F5)",
+      "Calidad de cáscara y consistencia del huevo normales",
+      "Consumo de alimento y agua sin alteración"
+    ],
+    "ia_window": [
+      "**Almacenamiento espermático:** Espermatozoides almacenados en túbulos SST (unión útero-vaginal) durante 10-14 días post-cópula.",
+      "**Sin regla AM/PM:** La gallina no tiene ciclo estral ni celo detectable.",
+      "**Estrategia reproductiva:** Una sola inseminación o cópula cada 7-10 días es suficiente gracias al almacenamiento en SST."
+    ]
   }
 }
+
+TIMELINE_DATA = {
+  "Bovino": {
+    "proestro": {"dur": "2-3 días", "icon": "", "title": "Folículo en crecimiento", "text": "Crecimiento del folículo dominante (4mm a 12-18mm). El Estradiol (E2) aumenta causando moco cervical transparente/filante, edema vulvar y relajación cervical."},
+    "estro": {"dur": "12-18 horas (Holstein alta prod.: <10h)", "icon": "", "title": "Receptividad sexual", "text": "Período de receptividad sexual activa. Monta aceptada es el signo primario debido a E2 alto. Surge preovulatorio de LH."},
+    "metaestro": {"dur": "3-4 días", "icon": "️", "title": "CL en formación", "text": "Ovulación ocurre 10-14h post-fin del estro. Luteinización del folículo ovulado para formar el Cuerpo Lúteo (CL) e inicio de secreción de P4. Posible sangrado metéstrico vaginal (24-48h post-ovulación)."},
+    "diestro": {"dur": "12-14 días", "icon": "", "title": "CL Maduro", "text": "Fase más larga (CL maduro con P4 máxima). Sin reconocimiento materno (días 17-18), la PGF2α endometrial destruye el CL (luteólisis) para reiniciar el ciclo. Si hay preñez, el embrión libera IFN-τ."}
+  },
+  "Porcino": {
+    "proestro": {"dur": "2-3 días", "icon": "", "title": "Crecimiento Múltiple", "text": "Fase folicular rápida. Crecimiento de múltiples folículos simultáneos (poliovulatorio)."},
+    "estro": {"dur": "24-72 horas", "icon": "", "title": "Receptividad prolongada", "text": "Receptividad sexual prolongada. Signo clave: Reflejo de inmovilidad (lordosis con orejas rígidas) ante presión dorsal y feromonas del verraco."},
+    "metaestro": {"dur": "2-3 días", "icon": "️", "title": "Formación de CLs", "text": "Ovulación de 15-25 folículos entre las 36-44h post-inicio del estro. Formación de múltiples cuerpos lúteos e inicio de la secreción de Progesterona (P4)."},
+    "diestro": {"dur": "11-13 días", "icon": "", "title": "Dominio de P4", "text": "Producción masiva de P4. Para evitar la luteólisis, se requiere el reconocimiento materno mediado por los estrógenos de mínimo 4 embriones."}
+  },
+  "Ovino": {
+    "proestro": {"dur": "1-2 días", "icon": "", "title": "Desarrollo Rápido", "text": "Crecimiento folicular rápido. Ciclicidad poliéstrica estacional de días cortos (otoño) estimulada por melatonina."},
+    "estro": {"dur": "24-36 horas", "icon": "", "title": "Celo Discreto", "text": "Signos conductuales muy discretos. Búsqueda activa del macho. Ovulación de 1-3 folículos hacia el final de esta fase."},
+    "metaestro": {"dur": "2-3 días", "icon": "️", "title": "CL Temprano", "text": "Formación del cuerpo lúteo joven y transición rápida hacia la secreción de progesterona (P4)."},
+    "diestro": {"dur": "10-12 días", "icon": "", "title": "Fase Lútea Acortada", "text": "Fase lútea acortada en comparación con bovinos. Dominio de P4. Reconocimiento materno embrionario mediado por IFN-τ en el útero."}
+  },
+  "Caprino": {
+    "proestro": {"dur": "2-3 días", "icon": "", "title": "Reclutamiento", "text": "Fase de reclutamiento y dominancia de 1-3 folículos. Poliéstrica estacional (con menor estacionalidad en regiones tropicales)."},
+    "estro": {"dur": "24-48 horas", "icon": "", "title": "Celo Evidente", "text": "Signos de celo evidentes por vocalización y movimiento continuo de cola. Inducción de la ciclicidad por el 'Efecto Macho'."},
+    "metaestro": {"dur": "2-3 días", "icon": "️", "title": "Luteinización", "text": "Ovulación ocurre unas 30 horas post-inicio de estro. Organización de 1-3 cuerpos lúteos en los ovarios."},
+    "diestro": {"dur": "13-15 días", "icon": "", "title": "Dominio Lúteo", "text": "Dominio lúteo clásico de P4. Sin gestación, la PGF2α induce la luteólisis. Si hay preñez, el reconocimiento embrionario se realiza por IFN-τ."}
+  },
+  "Equino": {
+    "proestro": {"dur": "2-3 días", "icon": "", "title": "Transición Inicial", "text": "Fase folicular inicial bajo influencia del fotoperíodo (poliéstrica estacional de días largos / primavera)."},
+    "estro": {"dur": "4-7 días", "icon": "", "title": "Celo Muy Prolongado", "text": "Signos severos ante el semental (postura de monta, cola levantada, micción y 'guiño' de vulva rítmico)."},
+    "metaestro": {"dur": "2-3 días", "icon": "️", "title": "Ovulación Especial", "text": "¡Particularidad única!: La ovulación ocurre 24-48h ANTES de terminar el estro. Inicio del desarrollo lúteo. La IA se debe programar DURANTE el celo."},
+    "diestro": {"dur": "10-12 días", "icon": "", "title": "Reinicio Rápido", "text": "Dominio estricto de P4. Si no hay gestación, la hembra equina regresa al proestro rápidamente debido a la luteólisis fisiológica."}
+  },
+  "Ave": {
+    "proestro": {"dur": "~2 horas", "icon": "", "title": "Fin del Ciclo Anterior", "text": "La oviposición del huevo anterior desencadena una señal neuroendocrina que inicia un nuevo ciclo ovulatorio de 25-27 horas."},
+    "estro": {"dur": "~6 horas", "icon": "", "title": "Pico de LH y Ovulación", "text": "Pico preovulatorio de LH 6-8 horas post-oviposición. El folículo F1 (más maduro de la jerarquía F1→F5) ovula y es capturado por el infundíbulo."},
+    "metaestro": {"dur": "~16 horas", "icon": "", "title": "Formación del Huevo", "text": "Tránsito oviductal completo: magnum (albúmina, ~3h), istmo (membranas, ~1.5h) y útero/glándula cascarígena (cáscara, ~20h). Calcificación activa."},
+    "diestro": {"dur": "~2 horas", "icon": "", "title": "Oviposición", "text": "Expulsión del huevo completo. La postura ocurre en serie de 5-7 días consecutivos seguida de 1 día de pausa (retraso acumulado de ~1h/día)."}
+  }
+}
+
 
 def generate_hormone_data(species, complication="Normal", pregnancy=False):
   data = SPECIES_DATA[species]
   days = data["cycle_duration"]
   t = np.linspace(0, days, 500)
   lh_peak = data["lh_peak"]
-  
+
+  # ========== RAMA EXCLUSIVA PARA AVE (ciclo ovulatorio de 26 horas) ==========
+  if species == "Ave":
+    # LH: Pico agudo 6-8h post-oviposición
+    lh = 5 + 90 * np.exp(-((t - 6) ** 2) / 1.0)
+
+    # FSH: Elevación basal con pico moderado pre-ovulatorio
+    fsh = 15 + 25 * np.exp(-((t - 4) ** 2) / 3.0) + 10 * np.sin(t / days * 4 * np.pi)
+
+    # Estradiol (E2): Elevación progresiva durante maduración del F1, pico pre-ovulatorio
+    e2 = 10 + 70 * np.exp(-((t - 5) ** 2) / 4.0)
+
+    # Progesterona (P4): Pico breve pre-ovulatorio (sin CL funcional prolongado)
+    p4 = 5 + 50 * np.exp(-((t - 5.5) ** 2) / 1.5)
+
+    # PGF2α y Señal Materna: No aplican en aves
+    pgf2a = np.full_like(t, 2.0)
+    senal_materna = np.full_like(t, 0.0)
+
+    # Patologías aviares
+    if complication == "Estrés por Calor":
+      lh = lh * 0.3 + 3
+      e2 = e2 * 0.35 + 2
+      fsh = fsh * 0.5
+      p4 = p4 * 0.4 + 2
+    elif complication == "Fotoperíodo Inadecuado (<14h luz)":
+      lh = np.full_like(t, 4.0)
+      fsh = 8 + 4 * np.sin(t / days * 4 * np.pi)
+      e2 = np.full_like(t, 5.0)
+      p4 = np.full_like(t, 3.0)
+    elif complication == "Agotamiento Ovárico / Muda":
+      lh = np.full_like(t, 3.0)
+      fsh = np.full_like(t, 5.0)
+      e2 = np.full_like(t, 3.0)
+      p4 = np.full_like(t, 2.0)
+
+    return pd.DataFrame({
+      "Día": t,
+      "LH": np.clip(lh, 0, 100),
+      "FSH": np.clip(fsh, 0, 100),
+      "Estradiol (E2)": np.clip(e2, 0, 100),
+      "Progesterona (P4)": np.clip(p4, 0, 100),
+      "PGF2α": np.clip(pgf2a, 0, 100),
+      "Señal Materna": np.clip(senal_materna, 0, 100)
+    })
+
+  # ========== LÓGICA ORIGINAL PARA MAMÍFEROS (sin modificar) ==========
   # Estradiol (E2)
   if species == "Equino":
     e_peak = lh_peak - 1
@@ -725,6 +835,7 @@ def generate_hormone_data(species, complication="Normal", pregnancy=False):
     "Señal Materna": np.clip(senal_materna, 0, 100)
   })
 
+
 def get_current_phase(day, phases):
   for p in phases:
     if p["range"][0] <= day < p["range"][1]:
@@ -732,6 +843,28 @@ def get_current_phase(day, phases):
   return phases[-1]
 
 def get_hud_diagnosis(day, phase_name, complication, pregnancy=False, species="Bovino"):
+  # ========== RAMA EXCLUSIVA PARA AVE ==========
+  if species == "Ave":
+    unit_label = f"Hora {day:.1f}"
+    # Patologías aviares
+    if complication == "Estrés por Calor":
+      return f"{unit_label} - Estrés por Calor: Supresión de GnRH, caída del pico de LH. Postura reducida un 15-30%. Calidad de cáscara comprometida.", "error"
+    elif complication == "Fotoperíodo Inadecuado (<14h luz)":
+      return f"{unit_label} - Fotoperíodo Inadecuado: Melatonina elevada suprime eje HHG. Cese de postura. Jerarquía folicular F1-F5 detenida.", "error"
+    elif complication == "Agotamiento Ovárico / Muda":
+      return f"{unit_label} - Agotamiento Ovárico / Muda: Detención total de la jerarquía folicular. Fase de reposo reproductivo forzado.", "error"
+    # Fases normales del ciclo ovulatorio
+    if phase_name == "Post-oviposición":
+      return f"{unit_label} - Normal: Oviposición del huevo anterior completada. Señal neuroendocrina inicia nuevo ciclo ovulatorio.", "info"
+    elif phase_name == "Pico LH / Ovulación":
+      return f"{unit_label} - Normal: Pico preovulatorio de LH activo. Ovulación del folículo F1 y captura por el infundíbulo.", "success"
+    elif phase_name == "Formación del huevo":
+      return f"{unit_label} - Normal: Tránsito oviductal — magnum (albúmina), istmo (membranas) y útero (cáscara). Calcificación en curso.", "info"
+    elif phase_name == "Oviposición":
+      return f"{unit_label} - Normal: Oviposición inminente. Contracciones del útero para expulsión del huevo.", "success"
+    return f"{unit_label} - Ciclo ovulatorio aviar en curso.", "info"
+
+  # ========== LÓGICA ORIGINAL PARA MAMÍFEROS ==========
   if pregnancy:
     if species in ["Bovino", "Ovino", "Caprino"]:
       return f"Día {day:.1f} - GESTACIÓN ACTIVA: Reconocimiento materno (IFN-τ) exitoso. PGF2α bloqueada, CL mantenido.", "success"
@@ -757,6 +890,7 @@ def get_hud_diagnosis(day, phase_name, complication, pregnancy=False, species="B
     return f"Día {day:.1f} - Normal (Metaestro): Luteinización en curso. Inicio de producción de Progesterona (P4).", "info"
   elif phase_name == "Diestro":
     return f"Día {day:.1f} - Normal (Diestro): Dominancia de P4 máxima. Útero preparado para posible gestación.", "info"
+
 
 
 # --- GESTIÓN DE ESTADOS (FLUJO DE PANTALLAS) ---
@@ -832,7 +966,7 @@ def renderizar_simulador():
   # Este bloque NO solicita al usuario que elija especie nuevamente.
 
   # Fallback de seguridad: si session_state llegara vacio por recarga directa
-  _especies_validas = ["Bovino", "Porcino", "Ovino", "Caprino", "Equino"]
+  _especies_validas = ["Bovino", "Porcino", "Ovino", "Caprino", "Equino", "Ave"]
   if st.session_state.especie_seleccionada not in _especies_validas:
     st.session_state.especie_seleccionada = "Bovino"
 
@@ -901,84 +1035,46 @@ def renderizar_simulador():
     </div>
     """, unsafe_allow_html=True)
   
-    # Base de datos interactiva para la Línea de Tiempo
-    TIMELINE_DATA = {
-      "Bovino": {
-        "proestro": {"dur": "2-3 días", "icon": "", "title": "Folículo en crecimiento", "text": "Crecimiento del folículo dominante (4mm a 12-18mm). El Estradiol (E2) aumenta causando moco cervical transparente/filante, edema vulvar y relajación cervical."},
-        "estro": {"dur": "12-18 horas (Holstein alta prod.: <10h)", "icon": "", "title": "Receptividad sexual", "text": "Período de receptividad sexual activa. Monta aceptada es el signo primario debido a E2 alto. Surge preovulatorio de LH."},
-        "metaestro": {"dur": "3-4 días", "icon": "️", "title": "CL en formación", "text": "Ovulación ocurre 10-14h post-fin del estro. Luteinización del folículo ovulado para formar el Cuerpo Lúteo (CL) e inicio de secreción de P4. Posible sangrado metéstrico vaginal (24-48h post-ovulación)."},
-        "diestro": {"dur": "12-14 días", "icon": "", "title": "CL Maduro", "text": "Fase más larga (CL maduro con P4 máxima). Sin reconocimiento materno (días 17-18), la PGF2α endometrial destruye el CL (luteólisis) para reiniciar el ciclo. Si hay preñez, el embrión libera IFN-τ."}
-      },
-      "Porcino": {
-        "proestro": {"dur": "2-3 días", "icon": "", "title": "Crecimiento Múltiple", "text": "Fase folicular rápida. Crecimiento de múltiples folículos simultáneos (poliovulatorio)."},
-        "estro": {"dur": "24-72 horas", "icon": "", "title": "Receptividad prolongada", "text": "Receptividad sexual prolongada. Signo clave: Reflejo de inmovilidad (lordosis con orejas rígidas) ante presión dorsal y feromonas del verraco."},
-        "metaestro": {"dur": "2-3 días", "icon": "️", "title": "Formación de CLs", "text": "Ovulación de 15-25 folículos entre las 36-44h post-inicio del estro. Formación de múltiples cuerpos lúteos e inicio de la secreción de Progesterona (P4)."},
-        "diestro": {"dur": "11-13 días", "icon": "", "title": "Dominio de P4", "text": "Producción masiva de P4. Para evitar la luteólisis, se requiere el reconocimiento materno mediado por los estrógenos de mínimo 4 embriones."}
-      },
-      "Ovino": {
-        "proestro": {"dur": "1-2 días", "icon": "", "title": "Desarrollo Rápido", "text": "Crecimiento folicular rápido. Ciclicidad poliéstrica estacional de días cortos (otoño) estimulada por melatonina."},
-        "estro": {"dur": "24-36 horas", "icon": "", "title": "Celo Discreto", "text": "Signos conductuales muy discretos. Búsqueda activa del macho. Ovulación de 1-3 folículos hacia el final de esta fase."},
-        "metaestro": {"dur": "2-3 días", "icon": "️", "title": "CL Temprano", "text": "Formación del cuerpo lúteo joven y transición rápida hacia la secreción de progesterona (P4)."},
-        "diestro": {"dur": "10-12 días", "icon": "", "title": "Fase Lútea Acortada", "text": "Fase lútea acortada en comparación con bovinos. Dominio de P4. Reconocimiento materno embrionario mediado por IFN-τ en el útero."}
-      },
-      "Caprino": {
-        "proestro": {"dur": "2-3 días", "icon": "", "title": "Reclutamiento", "text": "Fase de reclutamiento y dominancia de 1-3 folículos. Poliéstrica estacional (con menor estacionalidad en regiones tropicales)."},
-        "estro": {"dur": "24-48 horas", "icon": "", "title": "Celo Evidente", "text": "Signos de celo evidentes por vocalización y movimiento continuo de cola. Inducción de la ciclicidad por el 'Efecto Macho'."},
-        "metaestro": {"dur": "2-3 días", "icon": "️", "title": "Luteinización", "text": "Ovulación ocurre unas 30 horas post-inicio de estro. Organización de 1-3 cuerpos lúteos en los ovarios."},
-        "diestro": {"dur": "13-15 días", "icon": "", "title": "Dominio Lúteo", "text": "Dominio lúteo clásico de P4. Sin gestación, la PGF2α induce la luteólisis. Si hay preñez, el reconocimiento embrionario se realiza por IFN-τ."}
-      },
-      "Equino": {
-        "proestro": {"dur": "2-3 días", "icon": "", "title": "Transición Inicial", "text": "Fase folicular inicial bajo influencia del fotoperíodo (poliéstrica estacional de días largos / primavera)."},
-        "estro": {"dur": "4-7 días", "icon": "", "title": "Celo Muy Prolongado", "text": "Signos severos ante el semental (postura de monta, cola levantada, micción y 'guiño' de vulva rítmico)."},
-        "metaestro": {"dur": "2-3 días", "icon": "️", "title": "Ovulación Especial", "text": "¡Particularidad única!: La ovulación ocurre 24-48h ANTES de terminar el estro. Inicio del desarrollo lúteo. La IA se debe programar DURANTE el celo."},
-        "diestro": {"dur": "10-12 días", "icon": "", "title": "Reinicio Rápido", "text": "Dominio estricto de P4. Si no hay gestación, la hembra equina regresa al proestro rápidamente debido a la luteólisis fisiológica."}
-      }
-    }
-  
+    # Base de datos interactiva para la Línea de Tiempo (movida a nivel de módulo por rendimiento)
     sd = TIMELINE_DATA[species]
+
+    # Headers dinámicos: mamíferos usan nombres estral, Ave usa nombres ovulatorios
+    if species == "Ave":
+      phase_headers = [
+        ("Post-oviposición", "#FF9933", "🟠"),
+        ("Pico LH / Ovulación", "#FF3366", "🔴"),
+        ("Formación del Huevo", "#3399FF", "🔵"),
+        ("Oviposición", "#00CC99", "🟢")
+      ]
+    else:
+      phase_headers = [
+        ("Proestro", "#FF3366", "🔴"),
+        ("Estro", "#4CAF50", "🟢"),
+        ("Metaestro", "#F8961E", "🟡"),
+        ("Diestro", "#00CC99", "🟢")
+      ]
+
+    phase_keys = ["proestro", "estro", "metaestro", "diestro"]
+    glass_styles = ["glass-red", "glass-cyan", "glass-orange", "glass-emerald"]
+    bg_colors = ["rgba(255, 51, 102, 0.05)", "rgba(0, 242, 254, 0.05)", "rgba(248, 150, 30, 0.05)", "rgba(82, 183, 136, 0.05)"]
+    border_rgbas = ["rgba(255,51,102,0.2)", "rgba(0,242,254,0.2)", "rgba(248,150,30,0.2)", "rgba(0,204,153,0.2)"]
   
     st.markdown("<br>", unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns(4)
+    cols = st.columns(4)
   
-    with c1:
-      st.markdown(f"""
-      <div class="glass-card glass-red animate-fade-in" style="height: 100%; padding: 20px; background: rgba(255, 51, 102, 0.05);">
-        <h3 style="color: #FF3366; margin-top:0; border-bottom: 1px solid rgba(255,51,102,0.2); padding-bottom: 10px;"> Proestro</h3>
-        <p style="font-size: 0.85rem; color:#A0AAB5; margin-top: 10px;"><i>️ {sd['proestro']['dur']}</i></p>
-        <p style="font-size: 1.1rem; color: #fff;">{sd['proestro']['icon']} <b>{sd['proestro']['title']}</b></p>
-        <p class="texto-lectura-grande" style="font-size: 0.95rem !important;">{sd['proestro']['text']}</p>
-      </div>
-      """, unsafe_allow_html=True)
-    
-    with c2:
-      st.markdown(f"""
-      <div class="glass-card glass-cyan animate-fade-in" style="height: 100%; padding: 20px; background: rgba(0, 242, 254, 0.05);">
-        <h3 style="color: #4CAF50; margin-top:0; border-bottom: 1px solid rgba(0,242,254,0.2); padding-bottom: 10px;"> Estro</h3>
-        <p style="font-size: 0.85rem; color:#A0AAB5; margin-top: 10px;"><i>️ {sd['estro']['dur']}</i></p>
-        <p style="font-size: 1.1rem; color: #fff;">{sd['estro']['icon']} <b>{sd['estro']['title']}</b></p>
-        <p class="texto-lectura-grande" style="font-size: 0.95rem !important;">{sd['estro']['text']}</p>
-      </div>
-      """, unsafe_allow_html=True)
-    
-    with c3:
-      st.markdown(f"""
-      <div class="glass-card glass-orange animate-fade-in" style="height: 100%; padding: 20px; background: rgba(248, 150, 30, 0.05);">
-        <h3 style="color: #F8961E; margin-top:0; border-bottom: 1px solid rgba(248,150,30,0.2); padding-bottom: 10px;">🟡 Metaestro</h3>
-        <p style="font-size: 0.85rem; color:#A0AAB5; margin-top: 10px;"><i>️ {sd['metaestro']['dur']}</i></p>
-        <p style="font-size: 1.1rem; color: #fff;">{sd['metaestro']['icon']} <b>{sd['metaestro']['title']}</b></p>
-        <p class="texto-lectura-grande" style="font-size: 0.95rem !important;">{sd['metaestro']['text']}</p>
-      </div>
-      """, unsafe_allow_html=True)
-    
-    with c4:
-      st.markdown(f"""
-      <div class="glass-card glass-emerald animate-fade-in" style="height: 100%; padding: 20px; background: rgba(82, 183, 136, 0.05);">
-        <h3 style="color: #00CC99; margin-top:0; border-bottom: 1px solid rgba(0,204,153,0.2); padding-bottom: 10px;">🟢 Diestro</h3>
-        <p style="font-size: 0.85rem; color:#A0AAB5; margin-top: 10px;"><i>️ {sd['diestro']['dur']}</i></p>
-        <p style="font-size: 1.1rem; color: #fff;">{sd['diestro']['icon']} <b>{sd['diestro']['title']}</b></p>
-        <p class="texto-lectura-grande" style="font-size: 0.95rem !important;">{sd['diestro']['text']}</p>
-      </div>
-      """, unsafe_allow_html=True)
+    for i, col in enumerate(cols):
+      with col:
+        h_name, h_color, h_icon = phase_headers[i]
+        key = phase_keys[i]
+        st.markdown(f"""
+        <div class="glass-card {glass_styles[i]} animate-fade-in" style="height: 100%; padding: 20px; background: {bg_colors[i]};">
+          <h3 style="color: {h_color}; margin-top:0; border-bottom: 1px solid {border_rgbas[i]}; padding-bottom: 10px;">{h_icon} {h_name}</h3>
+          <p style="font-size: 0.85rem; color:#A0AAB5; margin-top: 10px;"><i>️ {sd[key]['dur']}</i></p>
+          <p style="font-size: 1.1rem; color: #fff;">{sd[key]['icon']} <b>{sd[key]['title']}</b></p>
+          <p class="texto-lectura-grande" style="font-size: 0.95rem !important;">{sd[key]['text']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
   
   # --- SECCIÓN 2: CALCULADORA DE DIAGNÓSTICO E IA ---
   if st.session_state.seccion_activa == "Checklist de Celo e IA":
@@ -994,9 +1090,10 @@ def renderizar_simulador():
   
     with c1:
       with st.container(border=False):
+        score_label = "Score de Postura" if species == "Ave" else "Score de Celo"
         st.markdown(f"""
         <div class='glass-card glass-orange' style='margin-bottom:15px; padding: 15px 20px;'>
-          <h4 style='margin:0; color:#FF9933;'>️ Score de Celo ({species})</h4>
+          <h4 style='margin:0; color:#FF9933;'>️ {score_label} ({species})</h4>
         </div>
         """, unsafe_allow_html=True)
         score = 0
@@ -1016,20 +1113,31 @@ def renderizar_simulador():
               score += 25
       
         st.markdown("---")
-        if score >= 100:
-          st.success(" **¡CELO CONFIRMADÍSIMO!** Proceder al protocolo de Inseminación Artificial o Monta Dirigida.")
-        elif score > 0 and score < 75:
-          st.warning("️ **SOSPECHA DE CELO (ESTRO INCOMPLETO).** No inseminar aún; se recomienda monitorear activamente.")
-        elif score >= 75 and score < 100:
-          st.warning("️ **ALTA PROBABILIDAD DE CELO.** Signos secundarios evidentes. Observar de cerca para conformación primaria.")
+        if species == "Ave":
+          if score >= 100:
+            st.success(" **¡POSTURA ÓPTIMA CONFIRMADA!** Programa de luz 16L:8O activo. Jerarquía folicular F1-F5 funcional.")
+          elif score > 0 and score < 75:
+            st.warning("️ **ALERTA DE POSTURA.** Revisar fotoperíodo, consumo de alimento y calidad de cáscara.")
+          elif score >= 75 and score < 100:
+            st.warning("️ **POSTURA PROBABLE.** Verificar continuidad de la serie de postura y estado de la jerarquía folicular.")
+          else:
+            st.markdown("<div style='padding:1rem; background:rgba(22,27,34,0.6); border-radius:12px; border:1px solid rgba(255,255,255,0.1); color:#8B949E;'>ℹ️ Marque los indicadores de postura observados para generar el diagnóstico reproductivo automático.</div>", unsafe_allow_html=True)
         else:
-          st.markdown("<div style='padding:1rem; background:rgba(22,27,34,0.6); border-radius:12px; border:1px solid rgba(255,255,255,0.1); color:#8B949E;'>ℹ️ Marque los signos clínicos observados en el hato para generar el diagnóstico reproductivo automático.</div>", unsafe_allow_html=True)
+          if score >= 100:
+            st.success(" **¡CELO CONFIRMADÍSIMO!** Proceder al protocolo de Inseminación Artificial o Monta Dirigida.")
+          elif score > 0 and score < 75:
+            st.warning("️ **SOSPECHA DE CELO (ESTRO INCOMPLETO).** No inseminar aún; se recomienda monitorear activamente.")
+          elif score >= 75 and score < 100:
+            st.warning("️ **ALTA PROBABILIDAD DE CELO.** Signos secundarios evidentes. Observar de cerca para conformación primaria.")
+          else:
+            st.markdown("<div style='padding:1rem; background:rgba(22,27,34,0.6); border-radius:12px; border:1px solid rgba(255,255,255,0.1); color:#8B949E;'>ℹ️ Marque los signos clínicos observados en el hato para generar el diagnóstico reproductivo automático.</div>", unsafe_allow_html=True)
   
     with c2:
       with st.container(border=False):
+        ia_label = "Manejo Reproductivo" if species == "Ave" else "Decisiones de IA"
         st.markdown(f"""
         <div class='glass-card glass-cyan' style='margin-bottom:15px; padding: 15px 20px;'>
-          <h4 style='margin:0; color:#4CAF50;'> Decisiones de IA ({species})</h4>
+          <h4 style='margin:0; color:#4CAF50;'> {ia_label} ({species})</h4>
         </div>
         """, unsafe_allow_html=True)
       
@@ -1060,15 +1168,61 @@ def renderizar_simulador():
           <h4 style='margin:0; color:#00CC99;'> Retorno de Inversión (ROI)</h4>
         </div>
         """, unsafe_allow_html=True)
+
+        # Diccionario de ROI dinámico por especie
+        ROI_DATA = {
+          "Bovino": {
+            "select_label": "Estrategia de Detección de Celo en Finca:",
+            "opciones": ["Observación Visual Tradicional (~40% de éxito)", "Collares de Precisión o Monitoreo Automatizado (~90% de éxito)"],
+            "obs_msg": " **Pérdida anual silenciosa de $150-200 USD por vaca.** El 60-70% de las montas de celo ocurren de noche cuando no hay personal vigilando.",
+            "tech_msg": " **Sincronización de datos en tiempo real.** ROI tecnológico estimado en menos de 6 meses al reducir días abiertos."
+          },
+          "Porcino": {
+            "select_label": "Estrategia de Detección de Celo en Granja Porcina:",
+            "opciones": ["Observación Visual sin Verraco (~50% de éxito)", "Detección con Verraco Marcador + Sensores (~90% de éxito)"],
+            "obs_msg": " **Pérdida por retraso post-destete: $50-80 USD por cerda/ciclo.** Sin verraco marcador, el reflejo de inmovilidad es difícil de confirmar.",
+            "tech_msg": " **Detección automatizada con sensores + IATF post-destete.** ROI en 2-3 ciclos productivos al sincronizar lotes completos."
+          },
+          "Ovino": {
+            "select_label": "Estrategia Reproductiva en Rebaño Ovino:",
+            "opciones": ["Detección Visual sin Macho Marcador (~30% de éxito)", "Efecto Macho + Implantes de Melatonina (~80% de éxito)"],
+            "obs_msg": " **Celos discretos, TDC <30% sin machos marcadores.** Pérdida estimada: $30-50 USD por oveja/temporada reproductiva.",
+            "tech_msg": " **Efecto macho + implantes de melatonina (Melovine).** Recuperación de inversión en 1 temporada reproductiva."
+          },
+          "Caprino": {
+            "select_label": "Estrategia Reproductiva en Hato Caprino:",
+            "opciones": ["Detección Visual sin Macho Marcador (~35% de éxito)", "Efecto Macho Programado + Esponjas/CIDR (~85% de éxito)"],
+            "obs_msg": " **TDC <35% sin efecto macho.** Pérdida estimada: $25-45 USD por cabra/temporada por celos no detectados.",
+            "tech_msg": " **Efecto macho programado + esponjas/CIDR.** ROI en la primera temporada reproductiva del hato."
+          },
+          "Equino": {
+            "select_label": "Estrategia Reproductiva en Manejo Equino:",
+            "opciones": ["Observación Conductual sin Ecografía (~45% de éxito)", "Ecografía Folicular Seriada + IA Dirigida (~90% de éxito)"],
+            "obs_msg": " **Estro prolongado (4-7 días) dificulta el timing de IA.** Pérdida estimada: $200-500 USD por ciclo fallido en la hembra equina.",
+            "tech_msg": " **Ecografía folicular seriada + IA durante el estro.** ROI en 1-2 ciclos reproductivos al optimizar el momento de inseminación."
+          },
+          "Ave": {
+            "select_label": "Estrategia de Manejo de Postura en Lote Avícola:",
+            "opciones": ["Fotoperíodo Natural sin Control (~60% postura)", "Programa de Luz 16L:8O Automatizado (~85-90% postura)"],
+            "obs_msg": " **Fotoperíodo inadecuado → caída del 15-30% en postura.** Pérdida estimada: $0.10-0.15 USD por ave/día en huevos no producidos.",
+            "tech_msg": " **Programa 16L:8O con temporizador automatizado.** ROI en 30-60 días por lote al maximizar la jerarquía folicular activa."
+          }
+        }
+
+        roi = ROI_DATA.get(species, ROI_DATA["Bovino"])
         if "temp_estrategia_deteccion_select" not in st.session_state:
-          st.session_state.temp_estrategia_deteccion_select = st.session_state.get("estrategia_deteccion_select", "Observación Visual Tradicional (~40% de éxito)")
-        st.selectbox("Estrategia de Detección de Celo en Finca:", ["Observación Visual Tradicional (~40% de éxito)", "Collares de Precisión o Monitoreo Automatizado (~90% de éxito)"], key="temp_estrategia_deteccion_select", on_change=sync_state, args=("temp_estrategia_deteccion_select", "estrategia_deteccion_select"))
-        tech = st.session_state.get("estrategia_deteccion_select", "Observación Visual Tradicional (~40% de éxito)")
+          st.session_state.temp_estrategia_deteccion_select = st.session_state.get("estrategia_deteccion_select", roi["opciones"][0])
+        # Reset si la opción actual no pertenece a la especie actual
+        if st.session_state.temp_estrategia_deteccion_select not in roi["opciones"]:
+          st.session_state.temp_estrategia_deteccion_select = roi["opciones"][0]
+          st.session_state.estrategia_deteccion_select = roi["opciones"][0]
+        st.selectbox(roi["select_label"], roi["opciones"], key="temp_estrategia_deteccion_select", on_change=sync_state, args=("temp_estrategia_deteccion_select", "estrategia_deteccion_select"))
+        tech = st.session_state.get("estrategia_deteccion_select", roi["opciones"][0])
       
-        if "Observación" in tech:
-          st.error(" **Pérdida anual silenciosa de $150-200 USD por vaca.** El 60-70% de las montas de celo ocurren de noche cuando no hay personal vigilando.")
+        if tech == roi["opciones"][0]:
+          st.error(roi["obs_msg"])
         else:
-          st.success(" **Sincronización de datos en tiempo real.** Retorno de inversión (ROI) tecnológico estimado en menos de 6 meses al reducir días abiertos.")
+          st.success(roi["tech_msg"])
   
   # --- SECCIÓN 3: LABORATORIO DE SIMULACIÓN Y COMPLICACIONES ---
   if st.session_state.seccion_activa == "Laboratorio de Simulacion":
@@ -1087,13 +1241,16 @@ def renderizar_simulador():
     if 'patologia_radio' not in st.session_state:
       st.session_state.patologia_radio = "Normal"
   
-    # Definir opciones base para patología
-    opciones_clinicas = ["Normal", "Balance Energético Negativo (BEN)", "Estrés Calórico"]
-    if species in ["Bovino", "Caprino", "Equino"]:
-      opciones_clinicas.insert(2, "Cuerpo Lúteo Persistente")
+    # Definir opciones base para patología (condicional por especie)
+    if species == "Ave":
+      opciones_clinicas = ["Normal", "Estrés por Calor", "Fotoperíodo Inadecuado (<14h luz)", "Agotamiento Ovárico / Muda"]
+    else:
+      opciones_clinicas = ["Normal", "Balance Energético Negativo (BEN)", "Estrés Calórico"]
+      if species in ["Bovino", "Caprino", "Equino"]:
+        opciones_clinicas.insert(2, "Cuerpo Lúteo Persistente")
   
-    # Regla: Si "Gestación Activa" está seleccionada, bloquear BEN y CL Persistente
-    if st.session_state.escenario_radio == "Gestación Activa (Con Embrión - Reconocimiento Materno)":
+    # Regla: Si "Gestación Activa" está seleccionada, bloquear BEN y CL Persistente (solo mamíferos)
+    if species != "Ave" and st.session_state.escenario_radio == "Gestación Activa (Con Embrión - Reconocimiento Materno)":
       opciones_clinicas = [op for op in opciones_clinicas if op not in ["Balance Energético Negativo (BEN)", "Cuerpo Lúteo Persistente"]]
   
     # Si la patología actual ya no es válida por el filtro, resetear a Normal
@@ -1120,320 +1277,336 @@ def renderizar_simulador():
     
     # Regla: Si "BEN" o "CL Persistente", forzar Ciclo Vacío y deshabilitar Escenario
     patologias_bloqueantes = ["Balance Energético Negativo (BEN)", "Cuerpo Lúteo Persistente"]
-    deshabilitar_gestacion = complication in patologias_bloqueantes
+    deshabilitar_gestacion = complication in patologias_bloqueantes or species == "Ave"
   
     if deshabilitar_gestacion:
       # Forzar estado sin gestación
       st.session_state.escenario_radio = "Ciclo Vacío (Sin Embrión - Actúa PGF2α)"
   
     with c_mod2:
-      st.markdown("**Escenario Reproductivo:**")
-      if "temp_escenario_radio" not in st.session_state:
-        st.session_state.temp_escenario_radio = st.session_state.get("escenario_radio", "Ciclo Vacío (Sin Embrión - Actúa PGF2α)")
-      st.radio(
-        "Seleccione Escenario:",
-        ["Ciclo Vacío (Sin Embrión - Actúa PGF2α)", "Gestación Activa (Con Embrión - Reconocimiento Materno)"],
-        label_visibility="collapsed",
-        key='temp_escenario_radio',
-        on_change=sync_state,
-        args=("temp_escenario_radio", "escenario_radio"),
-        disabled=deshabilitar_gestacion
-      )
-      escenario = st.session_state.get("escenario_radio", "Ciclo Vacío (Sin Embrión - Actúa PGF2α)")
-      pregnancy = "Gestación" in escenario
+      if species == "Ave":
+        st.markdown("**Escenario Reproductivo:**")
+        st.info("ℹ️ **Nota:** La gallina no tiene gestación uterina. El ciclo ovulatorio es continuo bajo fotoperíodo adecuado.")
+        pregnancy = False
+      else:
+        st.markdown("**Escenario Reproductivo:**")
+        if "temp_escenario_radio" not in st.session_state:
+          st.session_state.temp_escenario_radio = st.session_state.get("escenario_radio", "Ciclo Vacío (Sin Embrión - Actúa PGF2α)")
+        st.radio(
+          "Seleccione Escenario:",
+          ["Ciclo Vacío (Sin Embrión - Actúa PGF2α)", "Gestación Activa (Con Embrión - Reconocimiento Materno)"],
+          label_visibility="collapsed",
+          key='temp_escenario_radio',
+          on_change=sync_state,
+          args=("temp_escenario_radio", "escenario_radio"),
+          disabled=deshabilitar_gestacion
+        )
+        escenario = st.session_state.get("escenario_radio", "Ciclo Vacío (Sin Embrión - Actúa PGF2α)")
+        pregnancy = "Gestación" in escenario
     
-      if deshabilitar_gestacion:
-        st.info("ℹ️ **Nota:** Gestación deshabilitada para esta patología.")
+        if deshabilitar_gestacion:
+          st.info("ℹ️ **Nota:** Gestación deshabilitada para esta patología.")
       
-    # Caso Especial: Estrés Calórico + Gestación Activa
-    if complication == "Estrés Calórico" and pregnancy:
+    # Caso Especial: Estrés Calórico + Gestación Activa (solo mamíferos)
+    if species != "Ave" and complication == "Estrés Calórico" and pregnancy:
       st.error("**️ Alerta de Impacto Económico (Mortalidad Embrionaria Temprana):** El estrés por calor severo en zonas tropicales incrementa la temperatura uterina, deprime la viabilidad del embrión y bloquea su señal de reconocimiento antes del día 15. Esto genera una reabsorción embrionaria silenciosa, provocando el retorno de la hembra al celo. Pérdidas directas de $3.00 USD por día abierto adicional por animal.")
       
-    # Mensaje informativo si se omite CL Persistente
+    # Mensaje informativo si se omite CL Persistente (solo mamíferos no-bovinos relevantes)
     if species in ["Porcino", "Ovino"]:
       st.info(f"ℹ️ **Nota Clínica:** El 'Cuerpo Lúteo Persistente' no es una patología comúnmente diagnosticada ni representativa en {species.lower()}s. Ha sido deshabilitada para esta especie.")
     
-    # Panel Agropecuario Dinámico de Patologías
-    if complication == "Normal":
-      with st.expander(" Diagnóstico Económico y Gestión - Normal", expanded=True):
-        st.info("** Diagnóstico Técnico:** Ciclicidad fisiológica óptima.")
-        st.markdown("""
-        <div class='texto-lectura-grande'>
-          <ul>
-            <li class='item-lista-grande'><b>Métricas de Control:</b> Intervalo entre partos proyectado en 12-13 meses. Tasa de Detección de Celo (TDC) objetivo >80%.</li>
-            <li class='item-lista-grande'><b>Acción Agropecuaria:</b> Continuar con el registro zootécnico riguroso y monitoreo automatizado diario para inseminación programada.</li>
-          </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    elif complication == "Balance Energético Negativo (BEN)":
-      with st.expander(" Diagnóstico Económico y Gestión - BEN", expanded=True):
-        st.markdown("""
-        <div class="tarjeta-ben">
-          <h4 style="color: #EF5350; margin-top: 0px; font-size: 20px;">️ Balance Energético Negativo (BEN)</h4>
-          <ul class="texto-lectura-grande">
-            <li class='item-lista-grande'><b>Diagnóstico Económico:</b> Incremento drástico de "Días Abiertos". Cada día extra por encima de los 85 días post-parto le cuesta al hato $3 USD en alimentación de mantenimiento y leche no producida. En un hato de 100 vacas, 30 días de BEN representan $9,000 USD de pérdida evitable al año.</li>
-            <li class='item-lista-grande'><b>Fisiología Productiva:</b> La alta producción de leche supera el consumo de materia seca. El cerebro detecta el déficit de energía y apaga el eje reproductivo (FSH/LH) para priorizar la supervivencia y la lactancia.</li>
-            <li class='item-lista-grande'><b>Soluciones Técnicas de Gestión:</b> Balancear raciones aumentando la densidad energética en el tercio inicial de lactancia (grasas sobrepasantes, carbohidratos fermentables). En cerdas lactantes, planificar el "Destete Sincronizado" del lote para agrupar el retorno al celo.</li>
-          </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    elif complication == "Cuerpo Lúteo Persistente":
-      with st.expander(" Diagnóstico Económico y Gestión - CL Persistente", expanded=True):
-        st.markdown("""
-        <div class="tarjeta-cl">
-          <h4 style="color: #BA68C8; margin-top: 0px; font-size: 20px;"> Cuerpo Lúteo Persistente</h4>
-          <ul class="texto-lectura-grande">
-            <li class='item-lista-grande'><b>Diagnóstico Económico:</b> Provoca anestro prolongado (falsa preñez) que eleva los días abiertos y disminuye el índice de partos por año del hato.</li>
-            <li class='item-lista-grande'><b>Fisiología Productiva:</b> Inflamaciones o infecciones uterinas subclínicas bloquean físicamente la liberación de prostaglandina (PGF2α). El CL se mantiene intacto y la progesterona bloquea el ciclo.</li>
-            <li class='item-lista-grande'><b>Soluciones Técnicas de Gestión:</b> Reemplazar la observación visual ineficiente con protocolos de Inseminación Artificial a Tiempo Fijo (IATF, ej. Ovsynch o CIDR/DIB con progesterona) para inducir la ovulación y preñar el 100% de las hembras sincronizadas. Realizar ecografías post-parto preventivas a los 30 días.</li>
-          </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    elif complication == "Estrés Calórico":
-      with st.expander(" Diagnóstico Económico y Gestión - Estrés Calórico", expanded=True):
-        st.markdown("""
-        <div class="tarjeta-estres">
-          <h4 style="color: #D4AF37; margin-top: 0px; font-size: 20px;"> Estrés Calórico</h4>
-          <ul class="texto-lectura-grande">
-            <li class='item-lista-grande'><b>Diagnóstico Económico:</b> Ganaderías tropicales (ej. provincia de El Oro) sufren una caída crítica en la Tasa de Detección de Celo (TDC) visual a un 30-40%, provocando pérdidas de hasta $200 USD anuales por vaca.</li>
-            <li class='item-lista-grande'><b>Fisiología Productiva:</b> Las hembras suprimen el comportamiento de monta para no generar calor corporal. El 60-70% de los celos ocurren de forma nocturna en la fresca madrugada. Además, se altera drásticamente la calidad ovocitaria y la viabilidad del embrión.</li>
-            <li class='item-lista-grande'><b>Soluciones Técnicas de Gestión:</b> Inversión en collares de actividad con acelerómetro 3D para registrar celos silenciosos nocturnos. Instalar infraestructura de enfriamiento activo (sombras, aspersores, ventiladores) en áreas de espera y comederos para disminuir el ITH.</li>
-          </ul>
-        </div>
-        """, unsafe_allow_html=True)
+    # ========== PANELES AGROPECUARIOS DINÁMICOS DE PATOLOGÍAS ==========
+    if species == "Ave":
+      # --- Paneles exclusivos para Ave ---
+      if complication == "Normal":
+        with st.expander(" Diagnóstico Productivo - Postura Normal", expanded=True):
+          st.info("** Diagnóstico Técnico:** Ciclo ovulatorio fisiológico óptimo. Jerarquía folicular F1-F5 activa.")
+          st.markdown("""
+          <div class='texto-lectura-grande'>
+            <ul>
+              <li class='item-lista-grande'><b>Métricas de Control:</b> Tasa de postura objetivo: 85-90%. Programa de luz 16L:8O estable. Serie de postura: 5-7 huevos consecutivos + 1 día de pausa.</li>
+              <li class='item-lista-grande'><b>Acción Zootécnica:</b> Mantener fotoperíodo constante (16L:8O). Monitorear consumo de calcio para calcificación de cáscara. Registrar producción diaria por lote.</li>
+            </ul>
+          </div>
+          """, unsafe_allow_html=True)
+      elif complication == "Estrés por Calor":
+        with st.expander(" Diagnóstico Productivo - Estrés por Calor (Ave)", expanded=True):
+          st.markdown("""
+          <div class="pathology-card path-heat">
+            <h4 style="color: #D4AF37; margin-top: 0px; font-size: 20px;"> Estrés por Calor en Aves</h4>
+            <ul class="texto-lectura-grande">
+              <li class='item-lista-grande'><b>Diagnóstico Económico:</b> Caída del 15-30% en postura diaria. Pérdida estimada de $0.10-0.15 USD por ave/día en huevos no producidos. En un lote de 1,000 aves: $100-150 USD/día.</li>
+              <li class='item-lista-grande'><b>Fisiología Productiva:</b> El calor suprime la secreción de GnRH, deprime el pico preovulatorio de LH y altera la calcificación en la glándula cascarígena. Cáscaras delgadas y huevos deformes son signos frecuentes.</li>
+              <li class='item-lista-grande'><b>Soluciones Técnicas de Gestión:</b> Instalar ventiladores y nebulizadores en el galpón. Suplementar electrolitos y vitamina C en el agua. Reducir la densidad de aves por metro cuadrado. Ajustar la alimentación a las horas más frescas del día.</li>
+            </ul>
+          </div>
+          """, unsafe_allow_html=True)
+      elif complication == "Fotoperíodo Inadecuado (<14h luz)":
+        with st.expander(" Diagnóstico Productivo - Fotoperíodo Inadecuado (Ave)", expanded=True):
+          st.markdown("""
+          <div class="pathology-card path-cl">
+            <h4 style="color: #BA68C8; margin-top: 0px; font-size: 20px;"> Fotoperíodo Inadecuado (&lt;14h luz)</h4>
+            <ul class="texto-lectura-grande">
+              <li class='item-lista-grande'><b>Diagnóstico Económico:</b> Cese parcial o total de la postura. Pérdida directa del 100% de la producción de huevos durante el período de supresión. Activación de muda de plumas forzada.</li>
+              <li class='item-lista-grande'><b>Fisiología Productiva:</b> Con menos de 14 horas de luz, la melatonina se eleva y suprime el eje HHG (Hipotálamo-Hipófisis-Gónada). La jerarquía folicular F1-F5 se detiene progresivamente. La gallina entra en un estado de reposo reproductivo.</li>
+              <li class='item-lista-grande'><b>Soluciones Técnicas de Gestión:</b> Implementar programa de luz artificial con temporizador automatizado (16L:8O). Verificar la intensidad lumínica ≥20 lux a nivel de comedero. Evitar cortes de luz imprevistos que rompan la continuidad del fotoperíodo.</li>
+            </ul>
+          </div>
+          """, unsafe_allow_html=True)
+      elif complication == "Agotamiento Ovárico / Muda":
+        with st.expander(" Diagnóstico Productivo - Agotamiento Ovárico / Muda (Ave)", expanded=True):
+          st.markdown("""
+          <div class="pathology-card path-ben">
+            <h4 style="color: #EF5350; margin-top: 0px; font-size: 20px;"> Agotamiento Ovárico / Muda Forzada</h4>
+            <ul class="texto-lectura-grande">
+              <li class='item-lista-grande'><b>Diagnóstico Económico:</b> Cese de postura durante 6-8 semanas. Pérdida total de producción en el período de muda. Sin embargo, la muda controlada puede extender la vida productiva del lote en un segundo ciclo de postura.</li>
+              <li class='item-lista-grande'><b>Fisiología Productiva:</b> Tras 60-80 semanas de postura continua, la calidad de la cáscara y el tamaño del huevo decaen progresivamente. La jerarquía folicular F1-F5 se detiene completamente. El ovario entra en regresión y las plumas se renuevan.</li>
+              <li class='item-lista-grande'><b>Soluciones Técnicas de Gestión:</b> Programar muda controlada al final del primer ciclo de postura (semana 72-80). Reducir el fotoperíodo a 8L:16O durante 7-10 días para inducir la regresión ovárica. Tras la muda, restablecer el programa 16L:8O para iniciar el segundo ciclo con un 80-85% de postura.</li>
+            </ul>
+          </div>
+          """, unsafe_allow_html=True)
+    else:
+      # --- Paneles originales para mamíferos (sin modificar) ---
+      if complication == "Normal":
+        with st.expander(" Diagnóstico Económico y Gestión - Normal", expanded=True):
+          st.info("** Diagnóstico Técnico:** Ciclicidad fisiológica óptima.")
+          st.markdown("""
+          <div class='texto-lectura-grande'>
+            <ul>
+              <li class='item-lista-grande'><b>Métricas de Control:</b> Intervalo entre partos proyectado en 12-13 meses. Tasa de Detección de Celo (TDC) objetivo >80%.</li>
+              <li class='item-lista-grande'><b>Acción Agropecuaria:</b> Continuar con el registro zootécnico riguroso y monitoreo automatizado diario para inseminación programada.</li>
+            </ul>
+          </div>
+          """, unsafe_allow_html=True)
+      elif complication == "Balance Energético Negativo (BEN)":
+        with st.expander(" Diagnóstico Económico y Gestión - BEN", expanded=True):
+          st.markdown("""
+          <div class="tarjeta-ben">
+            <h4 style="color: #EF5350; margin-top: 0px; font-size: 20px;">️ Balance Energético Negativo (BEN)</h4>
+            <ul class="texto-lectura-grande">
+              <li class='item-lista-grande'><b>Diagnóstico Económico:</b> Incremento drástico de "Días Abiertos". Cada día extra por encima de los 85 días post-parto le cuesta al hato $3 USD en alimentación de mantenimiento y leche no producida. En un hato de 100 vacas, 30 días de BEN representan $9,000 USD de pérdida evitable al año.</li>
+              <li class='item-lista-grande'><b>Fisiología Productiva:</b> La alta producción de leche supera el consumo de materia seca. El cerebro detecta el déficit de energía y apaga el eje reproductivo (FSH/LH) para priorizar la supervivencia y la lactancia.</li>
+              <li class='item-lista-grande'><b>Soluciones Técnicas de Gestión:</b> Balancear raciones aumentando la densidad energética en el tercio inicial de lactancia (grasas sobrepasantes, carbohidratos fermentables). En cerdas lactantes, planificar el "Destete Sincronizado" del lote para agrupar el retorno al celo.</li>
+            </ul>
+          </div>
+          """, unsafe_allow_html=True)
+      elif complication == "Cuerpo Lúteo Persistente":
+        with st.expander(" Diagnóstico Económico y Gestión - CL Persistente", expanded=True):
+          st.markdown("""
+          <div class="tarjeta-cl">
+            <h4 style="color: #BA68C8; margin-top: 0px; font-size: 20px;"> Cuerpo Lúteo Persistente</h4>
+            <ul class="texto-lectura-grande">
+              <li class='item-lista-grande'><b>Diagnóstico Económico:</b> Provoca anestro prolongado (falsa preñez) que eleva los días abiertos y disminuye el índice de partos por año del hato.</li>
+              <li class='item-lista-grande'><b>Fisiología Productiva:</b> Inflamaciones o infecciones uterinas subclínicas bloquean físicamente la liberación de prostaglandina (PGF2α). El CL se mantiene intacto y la progesterona bloquea el ciclo.</li>
+              <li class='item-lista-grande'><b>Soluciones Técnicas de Gestión:</b> Reemplazar la observación visual ineficiente con protocolos de Inseminación Artificial a Tiempo Fijo (IATF, ej. Ovsynch o CIDR/DIB con progesterona) para inducir la ovulación y preñar el 100% de las hembras sincronizadas. Realizar ecografías post-parto preventivas a los 30 días.</li>
+            </ul>
+          </div>
+          """, unsafe_allow_html=True)
+      elif complication == "Estrés Calórico":
+        with st.expander(" Diagnóstico Económico y Gestión - Estrés Calórico", expanded=True):
+          st.markdown("""
+          <div class="tarjeta-estres">
+            <h4 style="color: #D4AF37; margin-top: 0px; font-size: 20px;"> Estrés Calórico</h4>
+            <ul class="texto-lectura-grande">
+              <li class='item-lista-grande'><b>Diagnóstico Económico:</b> Ganaderías tropicales (ej. provincia de El Oro) sufren una caída crítica en la Tasa de Detección de Celo (TDC) visual a un 30-40%, provocando pérdidas de hasta $200 USD anuales por vaca.</li>
+              <li class='item-lista-grande'><b>Fisiología Productiva:</b> Las hembras suprimen el comportamiento de monta para no generar calor corporal. El 60-70% de los celos ocurren de forma nocturna en la fresca madrugada. Además, se altera drásticamente la calidad ovocitaria y la viabilidad del embrión.</li>
+              <li class='item-lista-grande'><b>Soluciones Técnicas de Gestión:</b> Inversión en collares de actividad con acelerómetro 3D para registrar celos silenciosos nocturnos. Instalar infraestructura de enfriamiento activo (sombras, aspersores, ventiladores) en áreas de espera y comederos para disminuir el ITH.</li>
+            </ul>
+          </div>
+          """, unsafe_allow_html=True)
   
     # Data generation
     df = generate_hormone_data(species, complication, pregnancy)
     max_days = data['cycle_duration']
   
-    # 2. Control Slider y Auto-Play
+    # 2. Control Slider en Streamlit
     st.markdown("---")
     st.markdown("""
     <div class='glass-card glass-cyan' style='margin-bottom:10px; padding: 15px 20px;'>
       <h3 style='margin:0; color:#4CAF50;'>️ Simulador Endocrino en Tiempo Real</h3>
     </div>
     """, unsafe_allow_html=True)
-  
+    
+    sim_hash = f"{species}_{complication}_{pregnancy}"
+    if "is_playing" not in st.session_state:
+        st.session_state.is_playing = False
+    if "current_time" not in st.session_state:
+        st.session_state.current_time = 0.0
+    if "sim_hash" not in st.session_state or st.session_state.sim_hash != sim_hash:
+        st.session_state.current_time = 0.0
+        st.session_state.sim_hash = sim_hash
+        st.session_state.is_playing = False
+        st.session_state.base_fig = None
+
     col_play, col_slider = st.columns([1.2, 4])
+    
     with col_play:
-      st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.session_state.is_playing:
+            if st.button("⏸️ Pausar", use_container_width=True):
+                st.session_state.is_playing = False
+                st.rerun()
+        else:
+            if st.button("▶️ Reproducir", use_container_width=True):
+                if st.session_state.current_time >= max_days:
+                    st.session_state.current_time = 0.0
+                st.session_state.is_playing = True
+                st.rerun()
   
+    with col_slider:
+        slider_label = f"Desliza para avanzar {'la Hora' if species == 'Ave' else 'el Día'} del Ciclo manualmente:"
+        # Usamos value en lugar de key para evitar StreamlitAPIException al mutarlo en el bucle
+        tiempo_actual = st.slider(slider_label, min_value=0.0, max_value=float(max_days), value=float(st.session_state.current_time), step=0.1)
+        
+        # Si NO está reproduciendo automáticamente, permitimos actualización manual
+        if not st.session_state.is_playing:
+            if abs(tiempo_actual - st.session_state.current_time) > 0.01:
+                st.session_state.current_time = tiempo_actual  
     # ---------------------------
-    # Generar HUD states (Pre-calcular)
+    # Generar HUD states y KPIs dinámicos
     # ---------------------------
-    df_json = df.to_dict(orient="records")
-    hud_states = []
-    for row in df_json:
-      day_v = row["Día"]
-      c_phase = get_current_phase(day_v, data["phases"])
-      diag_txt, diag_typ = get_hud_diagnosis(day_v, c_phase["name"], complication, pregnancy, species)
-      hud_states.append({"Día": day_v, "text": diag_txt, "type": diag_typ})
+    idx = (df["Día"] - tiempo_actual).abs().idxmin()
+    row = df.iloc[idx]
     
-    export_obj = {
-      "species": species,
-      "complication": complication,
-      "max_days": float(max_days),
-      "data": df_json,
-      "hud_states": hud_states
-    }
-  
-    sim_data_json = json.dumps(export_obj, ensure_ascii=False)
-  
-    html_code = f"""
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-      <style>
-        :root {{
-          --bg: transparent;
-          --border: rgba(255, 255, 255, 0.08);
-          --text: #c9d1d9;
-          --success: #00CC99;
-          --error: #FF3366;
-          --warning: #FF9933;
-          --info: #4CAF50;
-        }}
-        body {{
-          background-color: var(--bg); color: var(--text);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          margin: 0; padding: 0;
-        }}
-        .controls-row {{
-          display: flex; align-items: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;
-          background: rgba(22, 27, 34, 0.6); padding: 15px 25px; border-radius: 16px; border: 1px solid var(--border);
-        }}
-        .btn-play-pause {{
-          background: linear-gradient(135deg, #4CAF50, #4facfe); border: none; color: #000;
-          padding: 10px 20px; border-radius: 8px; cursor: pointer;
-          font-size: 16px; font-weight: 700; transition: all 0.3s ease; min-width: 180px;
-          box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
-        }}
-        .btn-play-pause:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5); }}
-        .slider-container {{ flex-grow: 1; display: flex; flex-direction: column; min-width: 250px; }}
-        .slider-container label {{ font-size: 14px; margin-bottom: 8px; color: #8b949e; font-weight: 500; }}
-        input[type=range] {{ width: 100%; cursor: pointer; accent-color: #4CAF50; }}
-      
-        .hud-alert {{ padding: 20px; border-radius: 12px; margin-bottom: 20px; font-size: 18px; font-weight: 500; border-left-width: 6px; border-style: solid; box-shadow: 0 8px 32px rgba(0,0,0,0.3); line-height: 1.5; background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(10px); }}
-        .hud-success {{ border-color: rgba(255,255,255,0.1); border-left-color: var(--success); color: #7ee787; }}
-        .hud-error {{ border-color: rgba(255,255,255,0.1); border-left-color: var(--error); color: #ff7b72; }}
-        .hud-warning {{ border-color: rgba(255,255,255,0.1); border-left-color: var(--warning); color: #e3b341; }}
-        .hud-info {{ border-color: rgba(255,255,255,0.1); border-left-color: var(--info); color: #79c0ff; }}
-      
-        .metrics-grid {{
-          display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-          gap: 15px; margin-bottom: 20px; border: 1px solid var(--border);
-          padding: 20px; border-radius: 16px; background: rgba(22, 27, 34, 0.6); backdrop-filter: blur(12px);
-        }}
-        .metric {{ display: flex; flex-direction: column; align-items: center; justify-content: center; }}
-        .metric-label {{ font-size: 14px; color: #8b949e; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}}
-        .metric-value {{ font-size: 32px; font-weight: 800; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }}
-      
-        #met-fsh {{ color: #BC8BFF; }}
-        #met-lh {{ color: #FF3366; }}
-        #met-e2 {{ color: #58A6FF; }}
-        #met-p4 {{ color: #00CC99; }}
-        #met-mat {{ color: #FF9933; }}
-      
-        .plot-container {{ border: 1px solid var(--border); border-radius: 16px; padding: 15px; background: rgba(22, 27, 34, 0.6); backdrop-filter: blur(12px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }}
-      </style>
-    </head>
-    <body>
-      <div class="controls-row">
-        <button id="btnPlay" class="btn-play-pause">▶️ Reproducir (20s)</button>
-        <div class="slider-container">
-          <label>Desliza para avanzar el 'Día del Ciclo' manualmente:</label>
-          <input type="range" id="timeSlider" min="0" max="100" step="0.1" value="0">
-        </div>
-      </div>
+    c_phase = get_current_phase(row["Día"], data["phases"])
+    diag_txt, diag_typ = get_hud_diagnosis(row["Día"], c_phase["name"], complication, pregnancy, species)
     
-      <div id="hudBox" class="hud-alert hud-info">Inicializando simulación...</div>
-    
-      <div class="metrics-grid">
-        <div class="metric"><span class="metric-label">🟣 FSH (%)</span><span id="met-fsh" class="metric-value">0.0%</span></div>
-        <div class="metric"><span class="metric-label"> LH (%)</span><span id="met-lh" class="metric-value">0.0%</span></div>
-        <div class="metric"><span class="metric-label"> E2 (%)</span><span id="met-e2" class="metric-value">0.0%</span></div>
-        <div class="metric"><span class="metric-label">🟢 P4 (%)</span><span id="met-p4" class="metric-value">0.0%</span></div>
-        <div class="metric"><span class="metric-label" id="lbl-mat">🟠 PGF2α (%)</span><span id="met-mat" class="metric-value">0.0%</span></div>
-      </div>
-    
-      <div class="plot-container">
-        <div id="plotlyChart" style="width: 100%; height: 500px;"></div>
-      </div>
-    
-      <script>
-        const simData = {sim_data_json};
-        const df = simData.data;
-        const hudStates = simData.hud_states;
-        const maxDays = simData.max_days;
-      
-        document.getElementById("timeSlider").max = maxDays;
-        const btnPlay = document.getElementById("btnPlay");
-        const hudBox = document.getElementById("hudBox");
-        const lblMat = document.getElementById("lbl-mat");
-      
-        let matLabel = "🟠 PGF2α (%)";
-        let matKey = "PGF2α";
-        if ("{str(pregnancy).lower()}" === "true") {{
-          if ("{species}" === "Porcino") matLabel = " Estrógenos Emb. (%)";
-          else if ("{species}" === "Equino") matLabel = " Movilidad Emb. (%)";
-          else matLabel = " IFN-τ (%)";
-          matKey = "Señal Materna";
-        }}
-        lblMat.innerText = matLabel;
-  
-        const colors = {{
-          "FSH": "#BC8BFF", "LH": "#FF3366", "Estradiol (E2)": "#58A6FF",
-          "Progesterona (P4)": "#00CC99", "PGF2α": "#FF4500", "Señal Materna": "#FF9933"
-        }};
-      
-        let isPlaying = false; let currentDay = 0.0; let animationFrameId = null; let lastTime = 0;
-        const durationMs = 20000; const speedPerMs = maxDays / durationMs; 
-  
-        function initPlot() {{
-          const traces = [
-            {{ x: [], y: [], mode: 'lines', name: 'FSH', line: {{color: colors['FSH'], width: 3.5}}, hoverinfo: 'skip' }},
-            {{ x: [], y: [], mode: 'lines', name: 'LH', line: {{color: colors['LH'], width: 3.5}}, hoverinfo: 'skip' }},
-            {{ x: [], y: [], mode: 'lines', name: 'Estradiol (E2)', line: {{color: colors['Estradiol (E2)'], width: 3.5}}, hoverinfo: 'skip' }},
-            {{ x: [], y: [], mode: 'lines', name: 'Progesterona (P4)', line: {{color: colors['Progesterona (P4)'], width: 3.5}}, hoverinfo: 'skip' }},
-            {{ x: [], y: [], mode: 'lines', name: matKey, line: {{color: colors[matKey], width: 3.5}}, hoverinfo: 'skip' }}
-          ];
-          const layout = {{
-            template: 'plotly_dark', plot_bgcolor: 'rgba(0,0,0,0)', paper_bgcolor: 'rgba(0,0,0,0)',
-            margin: {{l: 50, r: 15, t: 90, b: 50}},
-            xaxis: {{title: 'Días del Ciclo', range: [0, maxDays], gridcolor: 'rgba(255,255,255,0.05)', automargin: true}},
-            yaxis: {{title: 'Concentración (%)', range: [0, 105], gridcolor: 'rgba(255,255,255,0.05)', automargin: true}},
-            legend: {{orientation: 'h', yanchor: 'bottom', y: 1.05, xanchor: 'center', x: 0.5}},
-            shapes: [{{type: 'line', x0: 0, x1: 0, y0: 0, y1: 105, line: {{color: '#FFF', width: 3}}}}],
-            annotations: [{{
-              xref: 'paper', yref: 'paper',
-              x: 0.02, y: 0.98, text: 'DÍA 0.0', showarrow: false,
-              xanchor: 'left', yanchor: 'top', 
-              font: {{color: '#FFF', size: 22}},
-              bgcolor: 'rgba(0,0,0,0.8)', bordercolor: '#FFF', borderpad: 6, borderwidth: 1, bordercolor: '#30363d'
-            }}]
-          }};
-          Plotly.newPlot('plotlyChart', traces, layout, {{displayModeBar: false, responsive: true}});
-          updateUI(0);
-        }}
-      
-        function updateUI(day) {{
-          let idx = 0; let minDiff = Infinity;
-          for(let i=0; i<df.length; i++) {{
-            let diff = Math.abs(df[i]['Día'] - day);
-            if(diff < minDiff) {{ minDiff = diff; idx = i; }}
-          }}
-          const row = df[idx]; const hud = hudStates[idx];
+    # Render HUD
+    if diag_typ == "success":
+        st.success(diag_txt)
+    elif diag_typ == "error":
+        st.error(diag_txt)
+    elif diag_typ == "warning":
+        st.warning(diag_txt)
+    else:
+        st.info(diag_txt)
         
-          document.getElementById("met-fsh").innerText = row['FSH'].toFixed(1) + '%';
-          document.getElementById("met-lh").innerText = row['LH'].toFixed(1) + '%';
-          document.getElementById("met-e2").innerText = row['Estradiol (E2)'].toFixed(1) + '%';
-          document.getElementById("met-p4").innerText = row['Progesterona (P4)'].toFixed(1) + '%';
-          document.getElementById("met-mat").innerText = row[matKey].toFixed(1) + '%';
+    # Render KPIs
+    matLabel = "🟠 PGF2α (%)"
+    matKey = "PGF2α"
+    if pregnancy:
+        if species == "Porcino": matLabel = " Estrógenos Emb. (%)"
+        elif species == "Equino": matLabel = " Movilidad Emb. (%)"
+        else: matLabel = " IFN-τ (%)"
+        matKey = "Señal Materna"
         
-          hudBox.innerText = hud.text; hudBox.className = "hud-alert hud-" + hud.type;
-        
-          const x = []; const fsh = []; const lh = []; const e2 = []; const p4 = []; const mat = [];
-          for(let i=0; i<=idx; i++) {{
-            x.push(df[i]['Día']); fsh.push(df[i]['FSH']); lh.push(df[i]['LH']);
-            e2.push(df[i]['Estradiol (E2)']); p4.push(df[i]['Progesterona (P4)']); mat.push(df[i][matKey]);
-          }}
-        
-          Plotly.update('plotlyChart', {{x: [x,x,x,x,x], y: [fsh,lh,e2,p4,mat]}}, {{
-            'shapes[0].x0': day, 'shapes[0].x1': day,
-            'annotations[0].text': 'DÍA ' + day.toFixed(1)
-          }});
-        }}
-      
-        function animate(time) {{
-          if (!isPlaying) return;
-          if (lastTime !== 0) {{
-            currentDay += (time - lastTime) * speedPerMs;
-            if (currentDay >= maxDays) {{ currentDay = maxDays; isPlaying = false; btnPlay.innerText = "▶️ Reproducir (20s)"; }}
-            document.getElementById("timeSlider").value = currentDay;
-            updateUI(currentDay);
-          }}
-          lastTime = time;
-          if (isPlaying) requestAnimationFrame(animate); else lastTime = 0;
-        }}
-      
-        btnPlay.addEventListener('click', () => {{
-          if (isPlaying) {{ isPlaying = false; btnPlay.innerText = "▶️ Reanudar"; lastTime = 0; }}
-          else {{ if (currentDay >= maxDays) currentDay = 0.0; isPlaying = true; btnPlay.innerText = "️ Pausar"; requestAnimationFrame(animate); }}
-        }});
-      
-        document.getElementById("timeSlider").addEventListener('input', (e) => {{
-          currentDay = parseFloat(e.target.value); updateUI(currentDay);
-          if (!isPlaying) btnPlay.innerText = currentDay < maxDays ? "▶️ Reanudar" : "▶️ Reproducir (20s)";
-        }});
-        initPlot();
-      </script>
-    </body>
-    </html>
+    kpi_html = f"""
+    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: rgba(22, 27, 34, 0.6); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
+        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">🟣 FSH (%)</span><span style="font-size: 28px; font-weight: 800; color: #BC8BFF;">{row['FSH']:.1f}%</span></div>
+        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;"> LH (%)</span><span style="font-size: 28px; font-weight: 800; color: #FF3366;">{row['LH']:.1f}%</span></div>
+        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;"> E2 (%)</span><span style="font-size: 28px; font-weight: 800; color: #58A6FF;">{row['Estradiol (E2)']:.1f}%</span></div>
+        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">🟢 P4 (%)</span><span style="font-size: 28px; font-weight: 800; color: #00CC99;">{row['Progesterona (P4)']:.1f}%</span></div>
+        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">{matLabel}</span><span style="font-size: 28px; font-weight: 800; color: #FF9933;">{row[matKey]:.1f}%</span></div>
+    </div>
     """
+    st.markdown(kpi_html, unsafe_allow_html=True)
   
-    components.html(html_code, height=1050, scrolling=True)
+    # ---------------------------
+    # Gráfica Plotly — Arquitectura st.empty() + while loop (sin st.rerun())
+    # Elimina el flickering y los saltos de tiempo al actualizar el placeholder
+    # in-place en lugar de forzar un re-render completo del script.
+    # ---------------------------
+    import plotly.graph_objects as go
+    import time
+
+    dayLabel   = 'HORA' if species == 'Ave' else 'DÍA'
+    xAxisTitle = 'Horas del Ciclo Ovulatorio' if species == 'Ave' else 'Días del Ciclo'
+
+    # ── Layout estático: se construye UNA sola vez por escenario ──────────────
+    if "base_fig" not in st.session_state or st.session_state.base_fig is None:
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name='FSH',
+                                 line=dict(color='#BC8BFF', width=3.5)))
+        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name='LH',
+                                 line=dict(color='#FF3366', width=3.5)))
+        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name='Estradiol (E2)',
+                                 line=dict(color='#58A6FF', width=3.5)))
+        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name='Progesterona (P4)',
+                                 line=dict(color='#00CC99', width=3.5)))
+        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name=matKey,
+                                 line=dict(color='#FF9933', width=3.5)))
+
+        fig.update_layout(
+            template='plotly_dark',
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            dragmode=False,
+            margin=dict(l=20, r=20, t=30, b=20),
+            xaxis=dict(
+                title=xAxisTitle,
+                range=[0, max_days],
+                gridcolor='rgba(255,255,255,0.05)',
+                fixedrange=True
+            ),
+            yaxis=dict(
+                title='Concentración (%)',
+                range=[0, 105],
+                gridcolor='rgba(255,255,255,0.05)',
+                fixedrange=True
+            ),
+            legend=dict(orientation='h', yanchor='bottom', y=1.05, xanchor='center', x=0.5),
+            height=400
+        )
+
+        fig.add_shape(type='line', x0=0, x1=0, y0=0, y1=105,
+                      line=dict(color='#FFF', width=3))
+        fig.add_annotation(
+            x=0.02, y=0.98, xref='paper', yref='paper', text="", showarrow=False,
+            xanchor='left', yanchor='top', font=dict(color='#FFF', size=20),
+            bgcolor='rgba(0,0,0,0.8)', bordercolor='#FFF', borderpad=6, borderwidth=1
+        )
+        st.session_state.base_fig = fig
+
+    # ── Placeholder dedicado: el gráfico nunca se destruye ni se recrea ───────
+    grafico_placeholder = st.empty()
+    fig_plot = st.session_state.base_fig
+
+    def _render_frame(t_actual):
+        """Actualiza solo los arrays de datos y el cursor; NO toca el layout."""
+        mask   = df["Día"].values <= t_actual
+        x_vals = df["Día"].values[mask]
+
+        fig_plot.data[0].x = x_vals;  fig_plot.data[0].y = df["FSH"].values[mask]
+        fig_plot.data[1].x = x_vals;  fig_plot.data[1].y = df["LH"].values[mask]
+        fig_plot.data[2].x = x_vals;  fig_plot.data[2].y = df["Estradiol (E2)"].values[mask]
+        fig_plot.data[3].x = x_vals;  fig_plot.data[3].y = df["Progesterona (P4)"].values[mask]
+        fig_plot.data[4].x = x_vals;  fig_plot.data[4].y = df[matKey].values[mask]
+
+        fig_plot.layout.shapes[0].x0      = t_actual
+        fig_plot.layout.shapes[0].x1      = t_actual
+        fig_plot.layout.annotations[0].text = f"{dayLabel} {t_actual:.1f}"
+
+        # Actualización in-place: solo cambia este contenedor,
+        # el resto de la UI permanece completamente estático.
+        grafico_placeholder.plotly_chart(
+            fig_plot,
+            use_container_width=True,
+            config={'staticPlot': True, 'displayModeBar': False}
+        )
+
+    # ── Render inicial (frame estático o primer cuadro de animación) ──────────
+    _render_frame(tiempo_actual)
+
+    # ── Bucle de animación continua (sin st.rerun()) ──────────────────────────
+    # El bucle while corre en el mismo hilo de Python y actualiza el
+    # placeholder in-place: el DOM del navegador recibe SOLO el diff del
+    # gráfico, sin redibujar ningún otro elemento de la página.
+    if st.session_state.is_playing:
+        # Paso calibrado: 0.1 unidades por cuadro → velocidad perceptualmente
+        # suave; sleep de 0.05 s da ~20 fps reales en el round-trip HTTP de
+        # Streamlit (límite práctico del protocolo websocket).
+        paso_animacion = 0.1
+        t = st.session_state.current_time
+
+        while st.session_state.is_playing and t < max_days:
+            t = min(t + paso_animacion, max_days)
+            _render_frame(t)
+            time.sleep(0.05)
+
+        # Al terminar el bucle: persiste el tiempo final y detiene la reproducción
+        st.session_state.current_time = t
+        if t >= max_days:
+            st.session_state.is_playing = False
   
 
 if st.session_state.etapa_actual == "portada":
@@ -1542,6 +1715,7 @@ elif st.session_state.etapa_actual == "seleccion":
   import base64
   from st_clickable_images import clickable_images
   
+  @st.cache_data
   def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
       data = f.read()
@@ -1584,9 +1758,9 @@ elif st.session_state.etapa_actual == "seleccion":
       data = SPECIES_DATA[sp]
       st.markdown(f"""
       <div style='font-size: 14px; color: #F5F5F5; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);'>
-        <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'>️ Duración:</span> {data['cycle_duration']} días</p>
+        <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'>️ Duración:</span> {data['cycle_duration']} {data.get('cycle_unit', 'días')}</p>
         <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'> Ovulación:</span> {data['ovulation_timing']}</p>
-        <p style='margin: 0;'><span style='color:#4CAF50;'> R. Materno:</span> {data['maternal_recognition'] if data['maternal_recognition'] != '?' else 'N/A'}</p>
+        <p style='margin: 0;'><span style='color:#4CAF50;'> R. Materno:</span> {data['maternal_recognition'] if data['maternal_recognition'] not in ['?', 'N/A'] else 'N/A'}</p>
       </div>
       """, unsafe_allow_html=True)
       
@@ -1597,11 +1771,11 @@ elif st.session_state.etapa_actual == "seleccion":
 
   st.markdown("<br>", unsafe_allow_html=True)
   
-  # Segunda fila: Caprino, Equino (Centrados)
-  col_spacer1, col4, col5, col_spacer2 = st.columns([1, 2, 2, 1])
-  species_list_row2 = ["Caprino", "Equino"]
+  # Segunda fila: Caprino, Equino, Ave
+  col4, col5, col6 = st.columns(3)
+  species_list_row2 = ["Caprino", "Equino", "Ave"]
   
-  for col, sp in zip([col4, col5], species_list_row2):
+  for col, sp in zip([col4, col5, col6], species_list_row2):
     with col:
       st.markdown(f"<h3 style='color: #4CAF50; text-align: center; margin-top: 0;'>{sp}</h3>", unsafe_allow_html=True)
       img_path = f"{sp.lower()}.jpg"
@@ -1634,9 +1808,9 @@ elif st.session_state.etapa_actual == "seleccion":
       data = SPECIES_DATA[sp]
       st.markdown(f"""
       <div style='font-size: 14px; color: #F5F5F5; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);'>
-        <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'>️ Duración:</span> {data['cycle_duration']} días</p>
+        <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'>️ Duración:</span> {data['cycle_duration']} {data.get('cycle_unit', 'días')}</p>
         <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'> Ovulación:</span> {data['ovulation_timing']}</p>
-        <p style='margin: 0;'><span style='color:#4CAF50;'> R. Materno:</span> {data['maternal_recognition'] if data['maternal_recognition'] != '?' else 'N/A'}</p>
+        <p style='margin: 0;'><span style='color:#4CAF50;'> R. Materno:</span> {data['maternal_recognition'] if data['maternal_recognition'] not in ['?', 'N/A'] else 'N/A'}</p>
       </div>
       """, unsafe_allow_html=True)
       
@@ -1659,5 +1833,55 @@ elif st.session_state.etapa_actual == "evaluacion":
   with col_back2:
     if st.button("Volver al Inicio", use_container_width=True, key="btn_volver_eval"):
       st.session_state.etapa_actual = "portada"
+      st.session_state.examen_desbloqueado = False   # Resetea acceso al salir
       st.rerun()
-  renderizar_evaluacion()
+
+  # ── Barrera de contraseña ────────────────────────────────────────────────────
+  # La clave se guarda en session_state para que los reruns internos del examen
+  # (selección de respuestas, calificación) no vuelvan a pedir la contraseña.
+  if "examen_desbloqueado" not in st.session_state:
+    st.session_state.examen_desbloqueado = False
+
+  if not st.session_state.examen_desbloqueado:
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='max-width: 480px; margin: 0 auto; padding: 36px 40px;
+                background: rgba(22, 33, 25, 0.92);
+                border: 1px solid rgba(76,175,80,0.3);
+                border-top: 3px solid #4CAF50;
+                border-radius: 16px;
+                backdrop-filter: blur(14px);
+                box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+                text-align: center;'>
+      <p style='font-size: 2rem; margin: 0 0 8px 0;'>🔒</p>
+      <h3 style='color: #4CAF50; margin: 0 0 6px 0; font-size: 1.3rem;'>
+        Evaluación Formal Protegida
+      </h3>
+      <p style='color: #8B949E; font-size: 0.88rem; margin: 0 0 24px 0;'>
+        Esta sección requiere contraseña de acceso.<br>
+        Solicítala a tu docente.
+      </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col_pw1, col_pw2, col_pw3 = st.columns([1, 2, 1])
+    with col_pw2:
+      clave_ingresada = st.text_input(
+        "Contraseña de acceso",
+        type="password",
+        placeholder="••••••••••••••",
+        key="input_clave_examen",
+        label_visibility="collapsed"
+      )
+      if st.button("🔓 Ingresar", use_container_width=True, key="btn_unlock_examen"):
+        if clave_ingresada == "agroestral2026":
+          st.session_state.examen_desbloqueado = True
+          st.success("✅ Acceso concedido. Cargando evaluación…")
+          st.rerun()
+        else:
+          st.error("❌ Contraseña incorrecta. Inténtalo de nuevo.")
+
+  else:
+    # ── Contenido completo del examen (solo visible tras autenticación) ─────────
+    renderizar_evaluacion()
+
