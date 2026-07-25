@@ -1607,7 +1607,6 @@ def renderizar_simulador():
         st.session_state.current_time = t
         if t >= max_days:
             st.session_state.is_playing = False
-  
 
 if st.session_state.etapa_actual == "portada":
   st.markdown("<br><br><br><br>", unsafe_allow_html=True)
@@ -1649,7 +1648,7 @@ if st.session_state.etapa_actual == "portada":
     </div>
   </div>
   """, unsafe_allow_html=True)
-  
+
   col1, col2, col3 = st.columns([1, 1.2, 1])
   with col2:
     st.markdown("""
@@ -1684,37 +1683,58 @@ if st.session_state.etapa_actual == "portada":
 
   st.markdown("<br>", unsafe_allow_html=True)
 
-  col_eval1, col_eval2, col_eval3 = st.columns([1, 1.2, 1])
-  with col_eval2:
-    st.markdown("""
-    <div style='background: rgba(76,175,80,0.07); padding: 20px 28px; border-radius: 12px;
-                border: 1px solid rgba(76,175,80,0.25); text-align: center; margin-bottom: 10px;'>
-        <p style='margin: 0 0 6px 0; color:#4CAF50; font-weight:700; font-size:0.8rem;
-                  letter-spacing:2px; text-transform:uppercase;'>Banco: 50 preguntas | Examen: 20 aleatorias</p>
-        <p style='margin: 0; color:#B0BEC5; font-size:0.85rem;'>
-            Umbral de aprobacion: 16 / 20 respuestas correctas (80%)
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("ACCEDER A LA EVALUACION FORMAL", use_container_width=True, key="btn_ir_evaluacion"):
-      st.session_state.etapa_actual = "evaluacion"
-      st.rerun()
+  # ── Dos botones de ruta directa al módulo de preguntas ───────────────────────
+  col_b1, col_b2, col_b3 = st.columns([1, 1.2, 1])
+  with col_b2:
+    st.markdown(
+      "<div style='display:flex;gap:12px;margin-bottom:14px;'>"
+
+      "<div style='flex:1;background:rgba(76,175,80,0.08);padding:16px 14px;"
+      "border-radius:12px;border:1px solid rgba(76,175,80,0.3);text-align:center;'>"
+      "<p style='margin:0 0 4px 0;color:#4CAF50;font-weight:700;font-size:0.76rem;"
+      "letter-spacing:1.5px;text-transform:uppercase;'>Banco de Practica</p>"
+      "<p style='margin:0;color:#78909C;font-size:0.76rem;line-height:1.4;'>"
+      "50 preguntas interactivas.<br>Libre. Sin contrasena.</p></div>"
+
+      "<div style='flex:1;background:rgba(156,39,176,0.08);padding:16px 14px;"
+      "border-radius:12px;border:1px solid rgba(156,39,176,0.3);text-align:center;'>"
+      "<p style='margin:0 0 4px 0;color:#CE93D8;font-weight:700;font-size:0.76rem;"
+      "letter-spacing:1.5px;text-transform:uppercase;'>Evaluacion Formal</p>"
+      "<p style='margin:0;color:#78909C;font-size:0.76rem;line-height:1.4;'>"
+      "20 aleatorias. Contrasena.<br>Umbral: 80%.</p></div>"
+
+      "</div>",
+      unsafe_allow_html=True
+    )
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+      if st.button("Banco de Practica", use_container_width=True, key="btn_ir_practica_home"):
+        st.session_state.etapa_actual = "evaluacion"
+        st.session_state.eval_vista = "practica"
+        st.session_state.practica_respuestas = {}
+        st.rerun()
+    with col_btn2:
+      if st.button("Evaluacion Formal", use_container_width=True, key="btn_ir_examen_home"):
+        st.session_state.etapa_actual = "evaluacion"
+        st.session_state.eval_vista = "examen"
+        st.session_state.examen_desbloqueado = False
+        st.rerun()
 
 elif st.session_state.etapa_actual == "seleccion":
   st.markdown("<br>", unsafe_allow_html=True)
-  
+
   col_back, _ = st.columns([1, 4])
   with col_back:
     if st.button(" Volver al Inicio", key="btn_volver_inicio", use_container_width=True):
       st.session_state.etapa_actual = "portada"
       st.rerun()
-      
+
   st.markdown("<h2 class='title-gradient' style='font-size: 3rem !important; margin-bottom: 40px !important;'>Seleccionar Especie de Estudio</h2>", unsafe_allow_html=True)
-  
+
   import os
   import base64
   from st_clickable_images import clickable_images
-  
+
   @st.cache_data
   def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
@@ -1724,37 +1744,27 @@ elif st.session_state.etapa_actual == "seleccion":
   # Primera fila: Bovino, Porcino, Ovino
   col1, col2, col3 = st.columns(3)
   species_list_row1 = ["Bovino", "Porcino", "Ovino"]
-  
+
   for col, sp in zip([col1, col2, col3], species_list_row1):
     with col:
       st.markdown(f"<h3 style='color: #4CAF50; text-align: center; margin-top: 0;'>{sp}</h3>", unsafe_allow_html=True)
       img_path = f"{sp.lower()}.jpg"
-      
       if os.path.exists(img_path):
         b64_img = get_base64_of_bin_file(img_path)
         img_str = f"data:image/jpeg;base64,{b64_img}"
       else:
         img_str = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-
       clicked = clickable_images(
-        [img_str],
-        titles=[sp],
+        [img_str], titles=[sp],
         div_style={"display": "flex", "justify-content": "center", "width": "100%", "margin": "0"},
-        img_style={
-          "cursor": "pointer",
-          "width": "100%",
-          "border-radius": "12px",
-          "object-fit": "cover",
-          "aspect-ratio": "16/9",
-          "transition": "transform 0.3s ease, box-shadow 0.3s ease",
-          "box-shadow": "0 4px 15px rgba(0, 0, 0, 0.4)"
-        },
+        img_style={"cursor": "pointer", "width": "100%", "border-radius": "12px",
+                   "object-fit": "cover", "aspect-ratio": "16/9",
+                   "transition": "transform 0.3s ease, box-shadow 0.3s ease",
+                   "box-shadow": "0 4px 15px rgba(0, 0, 0, 0.4)"},
         key=f"img_{sp}"
       )
-      
       if not os.path.exists(img_path):
-        st.markdown(f"<div style='background:rgba(0,0,0,0.3); backdrop-filter:blur(5px); height:150px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#8b949e; margin-top: -150px; position:relative; pointer-events: none; border:1px dashed rgba(255,255,255,0.2);'><i>Sin Imagen ({sp})</i></div>", unsafe_allow_html=True)
-      
+        st.markdown(f"<div style='background:rgba(0,0,0,0.3);backdrop-filter:blur(5px);height:150px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#8b949e;margin-top:-150px;position:relative;pointer-events:none;border:1px dashed rgba(255,255,255,0.2);'><i>Sin Imagen ({sp})</i></div>", unsafe_allow_html=True)
       data = SPECIES_DATA[sp]
       st.markdown(f"""
       <div style='font-size: 14px; color: #F5F5F5; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);'>
@@ -1763,48 +1773,37 @@ elif st.session_state.etapa_actual == "seleccion":
         <p style='margin: 0;'><span style='color:#4CAF50;'> R. Materno:</span> {data['maternal_recognition'] if data['maternal_recognition'] not in ['?', 'N/A'] else 'N/A'}</p>
       </div>
       """, unsafe_allow_html=True)
-      
       if clicked > -1:
         st.session_state.especie_seleccionada = sp
         st.session_state.etapa_actual = "simulador"
         st.rerun()
 
   st.markdown("<br>", unsafe_allow_html=True)
-  
+
   # Segunda fila: Caprino, Equino, Ave
   col4, col5, col6 = st.columns(3)
   species_list_row2 = ["Caprino", "Equino", "Ave"]
-  
+
   for col, sp in zip([col4, col5, col6], species_list_row2):
     with col:
       st.markdown(f"<h3 style='color: #4CAF50; text-align: center; margin-top: 0;'>{sp}</h3>", unsafe_allow_html=True)
       img_path = f"{sp.lower()}.jpg"
-      
       if os.path.exists(img_path):
         b64_img = get_base64_of_bin_file(img_path)
         img_str = f"data:image/jpeg;base64,{b64_img}"
       else:
         img_str = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-
       clicked = clickable_images(
-        [img_str],
-        titles=[sp],
+        [img_str], titles=[sp],
         div_style={"display": "flex", "justify-content": "center", "width": "100%", "margin": "0"},
-        img_style={
-          "cursor": "pointer",
-          "width": "100%",
-          "border-radius": "12px",
-          "object-fit": "cover",
-          "aspect-ratio": "16/9",
-          "transition": "transform 0.3s ease, box-shadow 0.3s ease",
-          "box-shadow": "0 4px 15px rgba(0, 0, 0, 0.4)"
-        },
+        img_style={"cursor": "pointer", "width": "100%", "border-radius": "12px",
+                   "object-fit": "cover", "aspect-ratio": "16/9",
+                   "transition": "transform 0.3s ease, box-shadow 0.3s ease",
+                   "box-shadow": "0 4px 15px rgba(0, 0, 0, 0.4)"},
         key=f"img_{sp}"
       )
-      
       if not os.path.exists(img_path):
-        st.markdown(f"<div style='background:rgba(0,0,0,0.3); backdrop-filter:blur(5px); height:150px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#8b949e; margin-top: -150px; position:relative; pointer-events: none; border:1px dashed rgba(255,255,255,0.2);'><i>Sin Imagen ({sp})</i></div>", unsafe_allow_html=True)
-      
+        st.markdown(f"<div style='background:rgba(0,0,0,0.3);backdrop-filter:blur(5px);height:150px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#8b949e;margin-top:-150px;position:relative;pointer-events:none;border:1px dashed rgba(255,255,255,0.2);'><i>Sin Imagen ({sp})</i></div>", unsafe_allow_html=True)
       data = SPECIES_DATA[sp]
       st.markdown(f"""
       <div style='font-size: 14px; color: #F5F5F5; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);'>
@@ -1813,12 +1812,10 @@ elif st.session_state.etapa_actual == "seleccion":
         <p style='margin: 0;'><span style='color:#4CAF50;'> R. Materno:</span> {data['maternal_recognition'] if data['maternal_recognition'] not in ['?', 'N/A'] else 'N/A'}</p>
       </div>
       """, unsafe_allow_html=True)
-      
       if clicked > -1:
         st.session_state.especie_seleccionada = sp
         st.session_state.etapa_actual = "simulador"
         st.rerun()
-      
 
 elif st.session_state.etapa_actual == "simulador":
   col_back, _ = st.columns([1, 5])
@@ -1833,55 +1830,119 @@ elif st.session_state.etapa_actual == "evaluacion":
   with col_back2:
     if st.button("Volver al Inicio", use_container_width=True, key="btn_volver_eval"):
       st.session_state.etapa_actual = "portada"
-      st.session_state.examen_desbloqueado = False   # Resetea acceso al salir
+      st.session_state.examen_desbloqueado = False
+      st.session_state.eval_vista = "practica"
       st.rerun()
 
-  # ── Barrera de contraseña ────────────────────────────────────────────────────
-  # La clave se guarda en session_state para que los reruns internos del examen
-  # (selección de respuestas, calificación) no vuelvan a pedir la contraseña.
+  # Cabecera del módulo
+  st.markdown(
+    "<div style='background:linear-gradient(135deg,rgba(22,33,25,0.9),rgba(12,22,16,0.95));"
+    "padding:28px 36px;border-radius:14px;border-top:4px solid #4CAF50;"
+    "border:1px solid rgba(76,175,80,0.2);margin-bottom:28px;'>"
+    "<h2 style='margin:0 0 6px 0;color:#4CAF50;font-weight:700;letter-spacing:1px;'>MODULO DE EVALUACION</h2>"
+    "<p style='margin:0;color:#B0BEC5;font-size:0.92rem;'>Ciclo Estral Comparado - Fisiologia Animal Aplicada</p>"
+    "</div>",
+    unsafe_allow_html=True
+  )
+
+  # Guardias de estado (no sobreescriben lo fijado por la portada al presionar el botón)
+  if "eval_vista" not in st.session_state:
+    st.session_state.eval_vista = "practica"
   if "examen_desbloqueado" not in st.session_state:
     st.session_state.examen_desbloqueado = False
+  if "practica_respuestas" not in st.session_state:
+    st.session_state.practica_respuestas = {}
 
-  if not st.session_state.examen_desbloqueado:
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style='max-width: 480px; margin: 0 auto; padding: 36px 40px;
-                background: rgba(22, 33, 25, 0.92);
-                border: 1px solid rgba(76,175,80,0.3);
-                border-top: 3px solid #4CAF50;
-                border-radius: 16px;
-                backdrop-filter: blur(14px);
-                box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-                text-align: center;'>
-      <p style='font-size: 2rem; margin: 0 0 8px 0;'>🔒</p>
-      <h3 style='color: #4CAF50; margin: 0 0 6px 0; font-size: 1.3rem;'>
-        Evaluación Formal Protegida
-      </h3>
-      <p style='color: #8B949E; font-size: 0.88rem; margin: 0 0 24px 0;'>
-        Esta sección requiere contraseña de acceso.<br>
-        Solicítala a tu docente.
-      </p>
-    </div>
-    """, unsafe_allow_html=True)
+  # ── RUTA A: Banco de Práctica (público, interactivo con st.radio) ─────────────
+  if st.session_state.eval_vista == "practica":
+    st.markdown(
+      "<div style='background:rgba(76,175,80,0.06);padding:16px 22px;border-radius:10px;"
+      "border:1px solid rgba(76,175,80,0.2);margin-bottom:24px;'>"
+      "<p style='margin:0;color:#B0BEC5;font-size:0.88rem;'>"
+      "Modo de practica libre. Resuelve las preguntas e identifica la respuesta correcta "
+      "resaltada en verde. Sin limite de tiempo ni calificacion final."
+      "</p></div>",
+      unsafe_allow_html=True
+    )
 
-    col_pw1, col_pw2, col_pw3 = st.columns([1, 2, 1])
-    with col_pw2:
-      clave_ingresada = st.text_input(
-        "Contraseña de acceso",
-        type="password",
-        placeholder="••••••••••••••",
-        key="input_clave_examen",
-        label_visibility="collapsed"
+    GRUPOS = [
+      ("Bovino - Ciclo y Fases", list(range(0, 10))),
+      ("Equino - Fisiologia y Manejo", list(range(10, 15))),
+      ("Porcino, Ovino y Reconocimiento Materno", list(range(15, 20))),
+      ("Deteccion de Celo y Tecnologia", list(range(20, 30))),
+      ("Protocolos de Sincronizacion (Ovsynch / IATF)", list(range(30, 39))),
+      ("Fisiologia Comparada y Economia Reproductiva", list(range(39, 50))),
+    ]
+    COLORES = ["#4CAF50", "#58A6FF", "#FF9933", "#BC8BFF", "#FF3366", "#00CC99"]
+
+    for g_idx, (titulo_g, indices) in enumerate(GRUPOS):
+      cg = COLORES[g_idx % len(COLORES)]
+      with st.expander(f"{titulo_g}  ({len(indices)} preguntas)", expanded=False):
+        for q_idx in indices:
+          q = BANCO_PREGUNTAS[q_idx]
+          num = q_idx + 1
+          st.markdown(
+            f"<div style='background:rgba(255,255,255,0.02);padding:14px 18px;"
+            f"border-radius:10px;border-left:3px solid {cg};margin-bottom:8px;'>"
+            f"<p style='margin:0;color:#E8F5E9;font-size:0.95rem;font-weight:500;line-height:1.5;'>"
+            f"<span style='color:{cg};font-weight:800;'>{num}.</span> {q['pregunta']}</p>"
+            f"</div>",
+            unsafe_allow_html=True
+          )
+          seleccion = st.radio(
+            label=f"Pregunta {num}", options=q["opciones"],
+            index=None, key=f"practica_q_{q_idx}", label_visibility="collapsed"
+          )
+          if seleccion is not None:
+            if q["opciones"].index(seleccion) == q["correcta"]:
+              st.markdown(
+                "<div style='background:rgba(76,175,80,0.12);padding:10px 16px;"
+                "border-radius:8px;border-left:3px solid #4CAF50;margin-bottom:16px;'>"
+                "<p style='margin:0;color:#4CAF50;font-size:0.88rem;font-weight:600;'>"
+                "Correcto. Respuesta exacta.</p></div>",
+                unsafe_allow_html=True
+              )
+            else:
+              st.markdown(
+                f"<div style='background:rgba(239,83,80,0.08);padding:10px 16px;"
+                f"border-radius:8px;border-left:3px solid #EF5350;margin-bottom:16px;'>"
+                f"<p style='margin:0;color:#EF5350;font-size:0.88rem;font-weight:600;'>"
+                f"Incorrecto. La respuesta correcta es: "
+                f"<span style='color:#4CAF50;'>{q['opciones'][q['correcta']]}</span></p></div>",
+                unsafe_allow_html=True
+              )
+
+  # ── RUTA B: Evaluación Formal (protegida con contraseña agroestral2026) ───────
+  elif st.session_state.eval_vista == "examen":
+    if not st.session_state.examen_desbloqueado:
+      st.markdown("<br>", unsafe_allow_html=True)
+      st.markdown(
+        "<div style='max-width:460px;margin:0 auto;padding:36px 40px;"
+        "background:rgba(22,33,25,0.92);border:1px solid rgba(76,175,80,0.3);"
+        "border-top:3px solid #4CAF50;border-radius:16px;"
+        "backdrop-filter:blur(14px);box-shadow:0 12px 40px rgba(0,0,0,0.5);text-align:center;'>"
+        "<p style='font-size:2rem;margin:0 0 8px 0;'>&#128274;</p>"
+        "<h3 style='color:#4CAF50;margin:0 0 6px 0;font-size:1.25rem;'>Evaluacion Formal Protegida</h3>"
+        "<p style='color:#8B949E;font-size:0.87rem;margin:0 0 24px 0;'>"
+        "Esta seccion requiere contrasena de acceso.<br>Solicitala a tu docente.</p>"
+        "</div>",
+        unsafe_allow_html=True
       )
-      if st.button("🔓 Ingresar", use_container_width=True, key="btn_unlock_examen"):
-        if clave_ingresada == "agroestral2026":
-          st.session_state.examen_desbloqueado = True
-          st.success("✅ Acceso concedido. Cargando evaluación…")
-          st.rerun()
-        else:
-          st.error("❌ Contraseña incorrecta. Inténtalo de nuevo.")
-
-  else:
-    # ── Contenido completo del examen (solo visible tras autenticación) ─────────
-    renderizar_evaluacion()
-
+      col_pw1, col_pw2, col_pw3 = st.columns([1, 2, 1])
+      with col_pw2:
+        clave = st.text_input(
+          "Contrasena", type="password",
+          placeholder="Ingresa la contrasena",
+          key="input_clave_examen", label_visibility="collapsed"
+        )
+        if st.button("Ingresar", use_container_width=True, key="btn_unlock_examen"):
+          if clave == "agroestral2026":
+            st.session_state.examen_desbloqueado = True
+            st.success("Acceso concedido. Cargando evaluacion...")
+            st.rerun()
+          else:
+            st.error("Contrasena incorrecta. Intentalo de nuevo.")
+    else:
+      # Los reruns internos del examen (avance de pregunta, calificacion) no
+      # repiden la clave porque examen_desbloqueado persiste en session_state.
+      renderizar_evaluacion()
