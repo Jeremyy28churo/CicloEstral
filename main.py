@@ -6,10 +6,190 @@ import streamlit.components.v1 as components
 import json
 from evaluacion import renderizar_evaluacion, BANCO_PREGUNTAS
 
-
 # FUNCIONES UNIVERSALES DE SINCRONIZACIÓN DE ESTADO
 def sync_state(temp_key, real_key):
   st.session_state[real_key] = st.session_state[temp_key]
+
+def aplicar_tema_dinamico(especie):
+    # Diccionario Avanzado: Hex, RGB y Color de Contraste (Texto)
+    temas = {
+        "Bovino":  {"hex": "#00B4D8", "rgb": "0, 180, 216",  "text": "#121212"}, # Cian
+        "Porcino": {"hex": "#F4A261", "rgb": "244, 162, 97", "text": "#121212"}, # Naranja
+        "Ovino":   {"hex": "#E9C46A", "rgb": "233, 196, 106","text": "#121212"}, # Dorado
+        "Caprino": {"hex": "#558B2F", "rgb": "85, 139, 47",  "text": "#FFFFFF"}, # Verde Oliva
+        "Equino":  {"hex": "#7B2CBF", "rgb": "123, 44, 191", "text": "#FFFFFF"}, # Púrpura Elegante
+        "Ave":     {"hex": "#D32F2F", "rgb": "211, 47, 47",  "text": "#FFFFFF"}  # Rojo
+    }
+    
+    # Fallback de seguridad
+    tema_activo = temas.get(especie, temas["Bovino"])
+    c_hex = tema_activo["hex"]
+    c_rgb = tema_activo["rgb"]
+    c_txt = tema_activo["text"]
+    
+    st.markdown(f"""
+    <style>
+        /* =========================================
+           ROOT VARIABLES & GLOBAL BACKGROUND
+           ========================================= */
+        :root {{
+            --color-hex: {c_hex} !important;
+            --color-rgb: {c_rgb} !important;
+            --color-text-contrast: {c_txt} !important;
+            --background-color: #121212 !important;
+            --text-color: #FFFFFF !important;
+        }}
+
+        [data-testid="stAppViewContainer"], [data-testid="stHeader"], html, body {{
+            background-color: #121212 !important;
+            color: #FFFFFF !important;
+        }}
+
+        /* =========================================
+           CONTENEDORES TINTADOS (TINTED CARDS)
+           ========================================= */
+        /* Interceptamos los contenedores que envuelvas con .tinted-card */
+        .tinted-card {{
+            background-color: rgba(var(--color-rgb), 0.15) !important;
+            border: 2px solid var(--color-hex) !important;
+            border-radius: 12px !important;
+            padding: 22px !important;
+            margin-bottom: 20px !important;
+            box-shadow: 0 8px 24px rgba(var(--color-rgb), 0.2) !important;
+            transition: all 0.3s ease;
+        }}
+        .tinted-card:hover {{
+            background-color: rgba(var(--color-rgb), 0.25) !important;
+            box-shadow: 0 12px 30px rgba(var(--color-rgb), 0.35) !important;
+            transform: translateY(-2px);
+        }}
+
+        /* =========================================
+           TÍTULOS IMPACTANTES (GRADIENTS)
+           ========================================= */
+        .tinted-card h1, .tinted-card h2, .tinted-card h3, .gradient-title {{
+            background: linear-gradient(90deg, var(--color-hex) 0%, #FFFFFF 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.5px !important;
+            margin-top: 0 !important;
+        }}
+
+        /* =========================================
+           ETIQUETAS SÓLIDAS (AGRO-BADGES)
+           ========================================= */
+        .agro-badge {{
+            background-color: var(--color-hex) !important;
+            color: var(--color-text-contrast) !important;
+            padding: 5px 12px !important;
+            border-radius: 6px !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1.5px !important;
+            font-size: 0.8rem !important;
+            display: inline-block !important;
+            margin-bottom: 8px !important;
+            box-shadow: 0 4px 10px rgba(var(--color-rgb), 0.4) !important;
+        }}
+
+        /* =========================================
+           BOTONES MASIVOS (NATIVOS DE STREAMLIT)
+           ========================================= */
+        div.stButton > button {{
+            background-color: var(--color-hex) !important;
+            color: var(--color-text-contrast) !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 20px 24px !important;
+            font-weight: 900 !important;
+            font-size: 1.15rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1.5px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 6px 15px rgba(var(--color-rgb), 0.4) !important;
+            width: 100% !important;
+        }}
+        div.stButton > button p {{
+            color: var(--color-text-contrast) !important;
+            font-weight: 900 !important;
+            font-size: 1.15rem !important;
+        }}
+        div.stButton > button:hover {{
+            background-color: #FFFFFF !important;
+            color: #121212 !important; /* Fuerza contraste oscuro en hover */
+            box-shadow: 0 0 25px rgba(var(--color-rgb), 0.7) !important;
+            transform: translateY(-3px) !important;
+        }}
+        div.stButton > button:hover p {{
+            color: #121212 !important;
+        }}
+
+        /* =========================================
+           NAVEGACIÓN PRINCIPAL (LOS 3 CUADROS MÁGICOS)
+           ========================================= */
+        @keyframes cyberPulse {{
+            0% {{ box-shadow: 0 0 0 0 rgba(var(--color-rgb), 0.6); }}
+            70% {{ box-shadow: 0 0 0 15px rgba(var(--color-rgb), 0); }}
+            100% {{ box-shadow: 0 0 0 0 rgba(var(--color-rgb), 0); }}
+        }}
+
+        /* Elevamos la especificidad agregando div.stButton > para vencer al botón por defecto */
+        div.stButton > button[aria-label="FASES DEL CICLO ESTRAL"],
+        div.stButton > button[aria-label="CHECKLIST DE CELO E IA"],
+        div.stButton > button[aria-label="LABORATORIO DE SIMULACION"],
+        div.stButton > button[aria-label="FASES DEL CICLO ESTRAL "] /* Fallback por si hay espacios */ {{
+            background: linear-gradient(145deg, rgba(20,20,25,0.9) 0%, rgba(35,35,45,0.95) 100%) !important;
+            border: 1px solid rgba(var(--color-rgb), 0.3) !important;
+            border-left: 8px solid var(--color-hex) !important;
+            border-radius: 14px !important;
+            padding: 24px !important;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;
+            animation: cyberPulse 2.5s infinite !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }}
+        
+        div.stButton > button[aria-label="FASES DEL CICLO ESTRAL"] p,
+        div.stButton > button[aria-label="CHECKLIST DE CELO E IA"] p,
+        div.stButton > button[aria-label="LABORATORIO DE SIMULACION"] p {{
+            color: #FFFFFF !important;
+            font-weight: 900 !important;
+            font-size: 1.15rem !important;
+            letter-spacing: 2px !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8) !important;
+            text-transform: uppercase !important;
+        }}
+
+        div.stButton > button[aria-label="FASES DEL CICLO ESTRAL"]:hover,
+        div.stButton > button[aria-label="CHECKLIST DE CELO E IA"]:hover,
+        div.stButton > button[aria-label="LABORATORIO DE SIMULACION"]:hover {{
+            background: linear-gradient(135deg, var(--color-hex) 0%, rgba(var(--color-rgb), 0.8) 100%) !important;
+            border-color: #FFFFFF !important;
+            border-left: 8px solid #FFFFFF !important;
+            transform: scale(1.04) translateY(-5px) !important;
+            box-shadow: 0 20px 40px rgba(var(--color-rgb), 0.7) !important;
+            animation: none !important;
+        }}
+        
+        div.stButton > button[aria-label="FASES DEL CICLO ESTRAL"]:hover p,
+        div.stButton > button[aria-label="CHECKLIST DE CELO E IA"]:hover p,
+        div.stButton > button[aria-label="LABORATORIO DE SIMULACION"]:hover p {{
+            color: var(--color-text-contrast) !important;
+            text-shadow: none !important;
+        }}
+
+        /* Forzar Color en Sliders y Radios Nativos */
+        div[data-baseweb="radio"] div[data-checked="true"] > div,
+        .stCheckbox div[data-checked="true"] > div,
+        .stSlider div[data-baseweb="slider"] div[data-testid="stTickBar"] > div {{
+            background-color: var(--color-hex) !important;
+            border-color: var(--color-hex) !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
 
 # INICIALIZACIÓN GLOBAL DE ESTADO (Para evitar State Loss)
 if 'etapa_actual' not in st.session_state:
@@ -32,45 +212,116 @@ st.markdown("""
   footer {visibility: hidden;}
   header {visibility: hidden;}
 
-  /* Ocultar boton toggle del sidebar — sidebar eliminado del diseno */
+  /* Ocultar boton toggle del sidebar */
   [data-testid="collapsedControl"] {display: none !important;}
   [data-testid="stSidebar"] {display: none !important;}
   
-  /* Variables y Base */
+  /* Variables y Base - NUEVO FONDO OSCURO */
   [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
-    background-color: #162119 !important;
+    background-color: #121212 !important;
   }
   html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
-    background-color: #162119;
-    color: #F5F5F5;
+    background-color: #121212;
+    color: #FFFFFF;
   }
   
   /* Animaciones Generales */
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes pulseGlow {
-    0% { box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
-    50% { box-shadow: 0 0 30px rgba(0, 242, 254, 0.7); }
-    100% { box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
+  @keyframes fadeInUpRecurrent {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
   }
 
-  /* ====== CINEMATIC BLUR REVEAL — SELECTORES RAIZ ====== */
-  /*
-   * Por que fallo la version anterior:
-   *   stMainBlockContainer y block-container son nodos HIJOS sujetos
-   *   a re-renders parciales de React. Streamlit puede desmontarlos y
-   *   remontarlos en cada interaccion, anulando la animacion.
-   *
-   * Por que este si funciona:
-   *   stAppViewContainer es el nodo raiz estatico de la app.
-   *   Streamlit lo monta UNA SOLA VEZ y no lo toca.
-   *   animation-fill-mode: both garantiza que el estado 0% se aplique
-   *   ANTES de que el elemento sea visible (evita flash de contenido).
-   *   animation-delay: 0ms asegura disparo inmediato.
-   */
+  /* Animación principal para los contenedores (pestañas) evitando romper la estructura global */
+  div[data-testid="stTabView"] > div[role="tabpanel"] {
+      animation: fadeInUpRecurrent 0.4s ease-out forwards;
+  }
+
+  /* Retraso escalonado para re-renderizar elementos de texto al cambiar de vista */
+  div[data-testid="stTabView"] > div[role="tabpanel"] h1, .stMarkdown h1 {
+      opacity: 0; animation: fadeInUpRecurrent 0.4s ease-out forwards; animation-delay: 0.1s;
+  }
+
+  div[data-testid="stTabView"] > div[role="tabpanel"] h2, .stMarkdown h2 {
+      opacity: 0; animation: fadeInUpRecurrent 0.4s ease-out forwards; animation-delay: 0.2s;
+  }
+
+  div[data-testid="stTabView"] > div[role="tabpanel"] h3, .stMarkdown h3 {
+      opacity: 0; animation: fadeInUpRecurrent 0.4s ease-out forwards; animation-delay: 0.3s;
+  }
+
+  div[data-testid="stTabView"] > div[role="tabpanel"] p,
+  div[data-testid="stTabView"] > div[role="tabpanel"] li, .stMarkdown p {
+      opacity: 0; animation: fadeInUpRecurrent 0.4s ease-out forwards; animation-delay: 0.4s;
+  }
+
+  /* =========================================
+     TIPOGRAFÍA PREMIUM Y RESALTES (SIMULADOR)
+     ========================================= */
+  
+  /* Etiquetas de Radio Buttons (Opciones) */
+  .stRadio label[data-baseweb="radio"] div {
+      font-size: 1.05rem !important;
+      font-weight: 600 !important;
+      color: #E2E8F0 !important;
+  }
+  
+  /* Títulos de los selectores (ej. Seleccione Patología:) */
+  .stRadio > label, .stSelectbox > label {
+      font-size: 1.15rem !important;
+      font-weight: 900 !important;
+      color: var(--color-hex) !important;
+      letter-spacing: 0.5px !important;
+      margin-bottom: 8px !important;
+      text-transform: uppercase !important;
+  }
+  
+  /* Textos generales dentro de markdown */
+  .stMarkdown p, .stMarkdown li {
+      font-size: 1.1rem !important;
+      color: #F1F5F9 !important;
+      line-height: 1.6 !important;
+  }
+  
+  /* Negritas impactantes que toman el color del animal */
+  .stMarkdown b, .stMarkdown strong {
+      color: var(--color-hex) !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.3px !important;
+  }
+  
+  /* Encabezados de Expanders (Diagnóstico Económico...) */
+  [data-testid="stExpander"] summary p {
+      font-size: 1.15rem !important;
+      font-weight: 800 !important;
+      color: #FFFFFF !important;
+  }
+  
+  /* Contenedor del Expander */
+  [data-testid="stExpander"] {
+      border: 1px solid rgba(var(--color-rgb), 0.4) !important;
+      border-radius: 8px !important;
+      background-color: rgba(26,28,35,0.7) !important;
+      transition: all 0.3s ease;
+  }
+  [data-testid="stExpander"]:hover {
+      box-shadow: 0 4px 15px rgba(var(--color-rgb), 0.2) !important;
+      border-color: var(--color-hex) !important;
+  }
+  
+  /* Alertas de Streamlit (Notas Clínicas, etc.) */
+  div[data-testid="stAlert"] {
+      background-color: rgba(var(--color-rgb), 0.15) !important;
+      border: 1px solid rgba(var(--color-rgb), 0.5) !important;
+      border-left: 6px solid var(--color-hex) !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+  }
+  div[data-testid="stAlert"] [data-testid="stMarkdownContainer"] p {
+      color: #FFFFFF !important;
+      font-weight: 600 !important;
+      font-size: 1.1rem !important;
+  }
 
   @keyframes cinematicReveal {
     0% {
@@ -101,20 +352,18 @@ st.markdown("""
     }
   }
 
-  /* Nodo raiz estatico — montado una sola vez por Streamlit */
+  /* Nodo raiz estatico */
   [data-testid="stAppViewContainer"] {
     animation: cinematicReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0ms both !important;
     will-change: transform, filter, opacity !important;
     transform-origin: center top !important;
   }
 
-  /* Sidebar: deslizamiento lateral escalonado */
   [data-testid="stSidebar"] {
     animation: cinematicRevealSidebar 0.85s cubic-bezier(0.16, 1, 0.3, 1) 120ms both !important;
     will-change: transform, filter, opacity !important;
   }
 
-  /* Garantia adicional: header de Streamlit con la misma revelacion */
   [data-testid="stHeader"] {
     animation: cinematicReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0ms both !important;
   }
@@ -123,9 +372,9 @@ st.markdown("""
     animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   }
   
-  /* Glassmorphism Containers */
+  /* Glassmorphism Containers - FONDO DE TARJETAS GRIS OSCURO */
   .glass-card {
-    background: #2A3B2D;
+    background: #1E1E1E;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -133,37 +382,37 @@ st.markdown("""
     padding: 24px;
     margin-bottom: 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
   }
   .glass-card:hover {
     transform: translateY(-4px);
     border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.7);
   }
   
-  /* Variantes de color para Glass Cards */
-  .glass-cyan { border-top: 3px solid #4CAF50; }
-  .glass-emerald { border-top: 3px solid #4CAF50; }
+  /* Variantes de color para Glass Cards (Bordes Superiores) */
+  .glass-cyan { border-top: 3px solid #00E676; }
+  .glass-emerald { border-top: 3px solid #00E676; }
   .glass-orange { border-top: 3px solid #FF9933; }
   .glass-purple { border-top: 3px solid #9c27b0; }
   .glass-red { border-top: 3px solid #FF3366; }
   
-  /* Tipografía Premium */
+  /* Tipografía Premium - BLANCOS Y ACENTOS ESMERALDA */
   .title-gradient {
     font-size: clamp(3rem, 5vw, 5rem) !important;
     font-weight: 900 !important;
     line-height: 1.1 !important;
-    color: #4CAF50 !important;
+    color: #00E676 !important;
     background: none !important;
     -webkit-text-fill-color: initial !important;
-    text-shadow: none !important;
+    text-shadow: 0 0 15px rgba(0, 230, 118, 0.3) !important;
     letter-spacing: -1px !important;
     margin-bottom: 10px !important;
     text-align: center;
   }
   .subtitle-elegant {
     font-size: clamp(1.1rem, 2vw, 1.5rem) !important;
-    color: #8b949e !important;
+    color: #B0B3B8 !important;
     font-weight: 400 !important;
     letter-spacing: 2px !important;
     text-transform: uppercase;
@@ -174,13 +423,13 @@ st.markdown("""
   .texto-lectura-grande {
     font-size: 16px !important;
     line-height: 1.7 !important;
-    color: #F5F5F5 !important;
+    color: #FFFFFF !important;
   }
   
-  /* Botones Pro */
+  /* Botones Pro - VERDE VIBRANTE */
   .btn-primary-custom {
-    background: #4CAF50;
-    color: #FFFFFF !important;
+    background: #00E676;
+    color: #121212 !important;
     padding: 16px 32px;
     border-radius: 12px;
     font-weight: 800;
@@ -197,8 +446,8 @@ st.markdown("""
   }
   .btn-primary-custom:hover {
     transform: scale(1.05);
-    background: #388E3C;
-    color: #FFFFFF !important;
+    background: #00C853;
+    color: #121212 !important;
     text-decoration: none;
   }
   
@@ -209,13 +458,13 @@ st.markdown("""
     margin-bottom: 15px;
     border: 1px solid rgba(255,255,255,0.1);
   }
-  .path-ben { background: linear-gradient(145deg, rgba(239, 83, 80, 0.1), rgba(0,0,0,0.2)); border-left: 4px solid #EF5350; }
-  .path-cl { background: linear-gradient(145deg, rgba(186, 104, 200, 0.1), rgba(0,0,0,0.2)); border-left: 4px solid #BA68C8; }
-  .path-heat { background: linear-gradient(145deg, rgba(212, 175, 55, 0.1), rgba(0,0,0,0.2)); border-left: 4px solid #D4AF37; }
+  .path-ben { background: linear-gradient(145deg, rgba(239, 83, 80, 0.1), rgba(0,0,0,0.4)); border-left: 4px solid #EF5350; }
+  .path-cl { background: linear-gradient(145deg, rgba(186, 104, 200, 0.1), rgba(0,0,0,0.4)); border-left: 4px solid #BA68C8; }
+  .path-heat { background: linear-gradient(145deg, rgba(212, 175, 55, 0.1), rgba(0,0,0,0.4)); border-left: 4px solid #D4AF37; }
   
   /* Ajustes Nativos de Streamlit */
   [data-testid="stMetric"] {
-    background: #2A3B2D;
+    background: #1E1E1E;
     padding: 15px;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -223,7 +472,7 @@ st.markdown("""
   }
   [data-testid="stMetric"]:hover {
     transform: translateY(-2px);
-    background: rgba(22, 27, 34, 0.8);
+    background: rgba(42, 45, 52, 0.9);
   }
   
   /* Checkbox y Radio */
@@ -237,298 +486,284 @@ st.markdown("""
   }
 
   /* ====== BOTONES DE NAVEGACION GLOBAL ====== */
+  /* ==========================================================
+     REDISEÑO DE BOTONES DE MENÚ PRINCIPAL (DASHBOARD PREMIUM)
+     ========================================================== */
 
-  /* Base para TODOS los st.button */
-  div.stButton > button:first-child {
-    background-color: #1B5E20 !important;
-    color: #FFFFFF !important;
-    font-weight: 900 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 2px !important;
-    font-size: 15px !important;
-    border: 2px solid #4CAF50 !important;
-    border-radius: 8px !important;
-    padding: 14px 24px !important;
-    transition: all 0.3s ease !important;
+  /* Interceptar los botones nativos de Streamlit */
+  div.stButton > button {
     width: 100% !important;
+    background-color: #1E1E1E !important;
+    background-image: none !important;
+    padding: 20px 24px !important;
+    
+    /* Bordes: Izquierdo grueso y vibrante, los demás invisibles */
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-left: 5px solid #00E676 !important;
+    border-radius: 6px !important;
+    
+    /* Transición suave para el toque mágico */
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    justify-content: flex-start !important;
   }
-  div.stButton > button:first-child p {
-    font-weight: 900 !important;
-    font-size: 15px !important;
-    letter-spacing: 2px !important;
-  }
-  div.stButton > button:first-child:hover {
-    background-color: #2E7D32 !important;
-    border-color: #81C784 !important;
+  
+  /* Tipografía Contundente */
+  div.stButton > button, 
+  div.stButton > button p {
     color: #FFFFFF !important;
-    box-shadow: 0px 4px 14px rgba(76, 175, 80, 0.45) !important;
-    transform: translateY(-2px) !important;
-  }
-  div.stButton > button:first-child:active {
-    transform: translateY(0) !important;
-    box-shadow: none !important;
+    text-transform: uppercase !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
   }
 
-  /* FASES DEL CICLO ESTRAL — cyan */
-  button[aria-label="FASES DEL CICLO ESTRAL"] {
-    background: linear-gradient(135deg, #006064, #00838F) !important;
-    border: 2px solid #00BCD4 !important;
-    color: #FFFFFF !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
-  }
-  button[aria-label="FASES DEL CICLO ESTRAL"]:hover {
-    background: linear-gradient(135deg, #00838F, #00BCD4) !important;
-    border-color: #80DEEA !important;
-    box-shadow: 0 6px 20px rgba(0, 188, 212, 0.5) !important;
+  /* Animación y Hover (El Toque Mágico) */
+  div.stButton > button:hover {
+    background-color: #2A2A2A !important;
+    border-left: 5px solid #00E676 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.25), 0 8px 16px rgba(0, 0, 0, 0.5) !important;
+    transform: translateX(4px) !important;
   }
 
-  /* CHECKLIST DE CELO E IA — naranja */
-  button[aria-label="CHECKLIST DE CELO E IA"] {
-    background: linear-gradient(135deg, #BF360C, #E64A19) !important;
-    border: 2px solid #FF7043 !important;
-    color: #FFFFFF !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
+  /* Efecto al hacer clic */
+  div.stButton > button:active {
+    background-color: #1A1A1A !important;
+    transform: translateX(0px) scale(0.99) !important;
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.2) !important;
   }
-  button[aria-label="CHECKLIST DE CELO E IA"]:hover {
-    background: linear-gradient(135deg, #E64A19, #FF5722) !important;
-    border-color: #FFAB91 !important;
-    box-shadow: 0 6px 20px rgba(255, 87, 34, 0.5) !important;
-  }
-
-  /* LABORATORIO DE SIMULACION — purpura */
+  
+  /* Resetear estilos específicos de secciones */
+  button[aria-label="FASES DEL CICLO ESTRAL"],
+  button[aria-label="CHECKLIST DE CELO E IA"],
   button[aria-label="LABORATORIO DE SIMULACION"] {
-    background: linear-gradient(135deg, #4A148C, #6A1B9A) !important;
-    border: 2px solid #AB47BC !important;
-    color: #FFFFFF !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1) !important;
+      background: #1E1E1E !important;
+      border: 1px solid rgba(255, 255, 255, 0.05) !important;
+      border-left: 5px solid #00E676 !important;
   }
+  button[aria-label="FASES DEL CICLO ESTRAL"]:hover,
+  button[aria-label="CHECKLIST DE CELO E IA"]:hover,
   button[aria-label="LABORATORIO DE SIMULACION"]:hover {
-    background: linear-gradient(135deg, #6A1B9A, #9C27B0) !important;
-    border-color: #CE93D8 !important;
-    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.5) !important;
+      background: #2A2A2A !important;
+      border-left: 5px solid #00E676 !important;
   }
 
   /* Boton secundario en sidebar (Cambiar Especie / Volver) */
-  [data-testid="stSidebar"] .stButton > button:first-child {
+  [data-testid="stSidebar"] .stButton > button {
     background-color: transparent !important;
     background: transparent !important;
-    border: 1px solid rgba(76, 175, 80, 0.5) !important;
-    color: #81C784 !important;
+    border: 1px solid rgba(0, 230, 118, 0.5) !important;
+    border-left: 1px solid rgba(0, 230, 118, 0.5) !important; /* Sobreescribir el grueso */
+    color: #00E676 !important;
     font-size: 13px !important;
     font-weight: 600 !important;
     box-shadow: none !important;
+    padding: 10px 15px !important;
+    justify-content: center !important;
   }
-  [data-testid="stSidebar"] .stButton > button:first-child:hover {
-    background-color: rgba(76, 175, 80, 0.12) !important;
-    background: rgba(76, 175, 80, 0.12) !important;
-    border-color: #4CAF50 !important;
-    color: #A5D6A7 !important;
+  [data-testid="stSidebar"] .stButton > button p {
+    color: #00E676 !important;
+    font-size: 13px !important;
+  }
+  [data-testid="stSidebar"] .stButton > button:hover {
+    background-color: rgba(0, 230, 118, 0.12) !important;
+    background: rgba(0, 230, 118, 0.12) !important;
+    border-color: #00E676 !important;
+    border-left: 1px solid #00E676 !important;
+    color: #00E676 !important;
     box-shadow: none !important;
     transform: none !important;
   }
 
-  /* ======================================================================
-   * RESPONSIVE DESIGN — DISPOSITIVOS MOVILES
-   * Breakpoint principal : max-width 768 px  (tablets pequeñas y telefonos)
-   * Breakpoint secundario: max-width 480 px  (telefonos compactos)
-   *
-   * Reglas de alcance:
-   *   - Solo ajustes de tamano, espaciado y disposicion visual.
-   *   - Paleta de colores, bordes redondeados y Cinematic Blur Reveal
-   *     se conservan intactos.
-   *   - Ningun cambio en logica Python ni en st.session_state.
-   * ====================================================================== */
-
+  /* RESPONSIVE DESIGN */
   @media (max-width: 768px) {
-
-    /* --- Contenedor principal: eliminar padding lateral excesivo --- */
-    [data-testid="stAppViewContainer"] > section > div {
-      padding-left: 12px !important;
-      padding-right: 12px !important;
-    }
-    [data-testid="block-container"] {
-      padding: 1rem 0.75rem !important;
-    }
-
-    /* --- Tipografia: titulo principal --- */
-    /* clamp ya escala, pero se refuerza el minimo para pantallas angostas */
-    .title-gradient {
-      font-size: clamp(2rem, 8vw, 3rem) !important;
-      letter-spacing: -0.5px !important;
-      margin-bottom: 6px !important;
-    }
-
-    /* --- Tipografia: subtitulo --- */
-    .subtitle-elegant {
-      font-size: clamp(0.75rem, 3.5vw, 1rem) !important;
-      letter-spacing: 1px !important;
-      margin-bottom: 16px !important;
-    }
-
-    /* --- Tipografia: cuerpo de lectura --- */
-    .texto-lectura-grande {
-      font-size: 14px !important;
-      line-height: 1.6 !important;
-    }
-
-    /* --- Glass Cards: reducir padding y radio en movil --- */
-    .glass-card {
-      padding: 16px !important;
-      border-radius: 12px !important;
-      margin-bottom: 14px !important;
-      /* Deshabilitar hover transform en tactil para evitar estado "pegado" */
-      transform: none !important;
-    }
-    .glass-card:hover {
-      transform: none !important;
-    }
-
-    /* --- Tarjetas de patologia: padding compacto --- */
-    .pathology-card {
-      padding: 14px !important;
-    }
-
-    /* --- Botones globales de st.button: area tactil minima 44 px (WCAG) --- */
-    div.stButton > button:first-child {
-      font-size: 12px !important;
-      letter-spacing: 1px !important;
-      padding: 12px 14px !important;
-      min-height: 44px !important;
-      /* Deshabilitar translateY en tactil */
-      transform: none !important;
-    }
-    div.stButton > button:first-child p {
-      font-size: 12px !important;
-      letter-spacing: 1px !important;
-    }
-    div.stButton > button:first-child:hover {
-      transform: none !important;
-    }
-    div.stButton > button:first-child:active {
-      background-color: #2E7D32 !important;
-      transform: none !important;
-    }
-
-    /* --- Botones de navegacion de seccion (Fases / Checklist / Lab) --- */
-    button[aria-label="FASES DEL CICLO ESTRAL"],
-    button[aria-label="CHECKLIST DE CELO E IA"],
-    button[aria-label="LABORATORIO DE SIMULACION"] {
-      font-size: 11px !important;
-      letter-spacing: 0.5px !important;
-      padding: 10px 8px !important;
-    }
-
-    /* --- Boton personalizado (.btn-primary-custom) --- */
-    .btn-primary-custom {
-      padding: 12px 20px !important;
-      font-size: 1rem !important;
-      letter-spacing: 0.5px !important;
-      border-radius: 10px !important;
-    }
-
-    /* --- Metricas de Streamlit: padding reducido --- */
-    [data-testid="stMetric"] {
-      padding: 10px !important;
-    }
-    [data-testid="stMetric"]:hover {
-      transform: none !important;
-    }
-
-    /* --- Radio buttons: area tactil ampliada para dedo --- */
-    [data-testid="stRadio"] label {
-      padding: 10px 8px !important;
-      min-height: 44px !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-    [data-testid="stCheckbox"] label {
-      min-height: 44px !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-
-    /* --- Sidebar: reducir padding interno en movil --- */
-    [data-testid="stSidebar"] > div:first-child {
-      padding: 1rem 0.75rem !important;
-    }
-    [data-testid="stSidebar"] .stButton > button:first-child {
-      font-size: 12px !important;
-      padding: 10px 12px !important;
-      min-height: 44px !important;
-    }
-
-    /* --- Barra de progreso de evaluacion: texto auxiliar legible --- */
-    div[style*="font-size:0.82rem"] {
-      font-size: 0.75rem !important;
-    }
-
-    /* --- Separadores horizontales: margen reducido --- */
-    hr {
-      margin: 12px 0 !important;
-    }
+    [data-testid="stAppViewContainer"] > section > div { padding-left: 12px !important; padding-right: 12px !important; }
+    [data-testid="block-container"] { padding: 1rem 0.75rem !important; }
+    .title-gradient { font-size: clamp(2rem, 8vw, 3rem) !important; letter-spacing: -0.5px !important; margin-bottom: 6px !important; }
+    .subtitle-elegant { font-size: clamp(0.75rem, 3.5vw, 1rem) !important; letter-spacing: 1px !important; margin-bottom: 16px !important; }
+    .texto-lectura-grande { font-size: 14px !important; line-height: 1.6 !important; }
+    .glass-card { padding: 16px !important; border-radius: 12px !important; margin-bottom: 14px !important; transform: none !important; }
+    .glass-card:hover { transform: none !important; }
+    .pathology-card { padding: 14px !important; }
+    div.stButton > button:first-child { font-size: 12px !important; letter-spacing: 1px !important; padding: 12px 14px !important; min-height: 44px !important; transform: none !important; }
+    div.stButton > button:first-child p { font-size: 12px !important; letter-spacing: 1px !important; }
+    div.stButton > button:first-child:hover { transform: none !important; }
+    button[aria-label="FASES DEL CICLO ESTRAL"], button[aria-label="CHECKLIST DE CELO E IA"], button[aria-label="LABORATORIO DE SIMULACION"] { font-size: 11px !important; letter-spacing: 0.5px !important; padding: 10px 8px !important; }
+    .btn-primary-custom { padding: 12px 20px !important; font-size: 1rem !important; letter-spacing: 0.5px !important; border-radius: 10px !important; }
+    [data-testid="stMetric"] { padding: 10px !important; }
+    [data-testid="stMetric"]:hover { transform: none !important; }
+    [data-testid="stRadio"] label { padding: 10px 8px !important; min-height: 44px !important; display: flex !important; align-items: center !important; }
+    [data-testid="stCheckbox"] label { min-height: 44px !important; display: flex !important; align-items: center !important; }
+    [data-testid="stSidebar"] > div:first-child { padding: 1rem 0.75rem !important; }
+    [data-testid="stSidebar"] .stButton > button:first-child { font-size: 12px !important; padding: 10px 12px !important; min-height: 44px !important; }
+    div[style*="font-size:0.82rem"] { font-size: 0.75rem !important; }
+    hr { margin: 12px 0 !important; }
   }
 
-  /* ======================================================================
-   * BREAKPOINT SECUNDARIO — Telefonos compactos (max-width: 480 px)
-   * Ajustes adicionales para pantallas menores a 5 pulgadas.
-   * ====================================================================== */
-
   @media (max-width: 480px) {
+    .title-gradient { font-size: clamp(1.6rem, 9vw, 2.4rem) !important; }
+    .subtitle-elegant { font-size: clamp(0.65rem, 3vw, 0.85rem) !important; letter-spacing: 0.5px !important; }
+    .glass-card { padding: 12px !important; border-radius: 10px !important; }
+    div.stButton > button:first-child { font-size: 11px !important; letter-spacing: 0.5px !important; padding: 11px 10px !important; }
+    button[aria-label="FASES DEL CICLO ESTRAL"], button[aria-label="CHECKLIST DE CELO E IA"], button[aria-label="LABORATORIO DE SIMULACION"] { font-size: 10px !important; letter-spacing: 0 !important; padding: 9px 6px !important; white-space: normal !important; word-break: break-word !important; }
+    .texto-lectura-grande { font-size: 13px !important; }
+    [data-testid="stMetric"] { padding: 8px !important; }
+    [data-testid="stMetricLabel"] { font-size: 11px !important; }
+    [data-testid="stMetricValue"] { font-size: 1.2rem !important; }
+  }
 
-    /* Titulo aun mas compacto */
-    .title-gradient {
-      font-size: clamp(1.6rem, 9vw, 2.4rem) !important;
-    }
+  /* =========================================
+     REDISENO VISUAL EXTREMO - UI/UX
+     ========================================= */
 
-    /* Subtitulo minimalista */
-    .subtitle-elegant {
-      font-size: clamp(0.65rem, 3vw, 0.85rem) !important;
-      letter-spacing: 0.5px !important;
-    }
+  @keyframes critical-pulse {
+    0% { opacity: 1; text-shadow: 0 0 10px rgba(255, 51, 102, 0.8); color: #FF3366; }
+    50% { opacity: 0.7; text-shadow: 0 0 20px rgba(255, 51, 102, 1); color: #FF6688; }
+    100% { opacity: 1; text-shadow: 0 0 10px rgba(255, 51, 102, 0.8); color: #FF3366; }
+  }
 
-    /* Glass cards: padding minimo funcional */
-    .glass-card {
-      padding: 12px !important;
-      border-radius: 10px !important;
-    }
+  @keyframes optimum-pulse {
+    0% { opacity: 1; text-shadow: 0 0 10px rgba(0, 230, 118, 0.8); color: #00E676; }
+    50% { opacity: 0.8; text-shadow: 0 0 25px rgba(0, 230, 118, 1); color: #69F0AE; }
+    100% { opacity: 1; text-shadow: 0 0 10px rgba(0, 230, 118, 0.8); color: #00E676; }
+  }
 
-    /* Botones: tamano tactil critico */
-    div.stButton > button:first-child {
-      font-size: 11px !important;
-      letter-spacing: 0.5px !important;
-      padding: 11px 10px !important;
-    }
+  .text-heavy { font-size: 1.4rem !important; font-weight: 800 !important; color: #FFFFFF !important; letter-spacing: 0.5px; }
+  .text-neon-green { color: #00E676 !important; font-weight: 800 !important; }
+  .text-neon-orange { color: #FF9933 !important; font-weight: 800 !important; }
+  .alert-critical-pulse { animation: critical-pulse 1.8s infinite ease-in-out; font-weight: 900 !important; font-size: 1.2rem !important; }
+  .alert-optimum-pulse { animation: optimum-pulse 2s infinite ease-in-out; font-weight: 900 !important; font-size: 1.2rem !important; }
 
-    /* Botones de seccion: solo letras, sin desborde */
-    button[aria-label="FASES DEL CICLO ESTRAL"],
-    button[aria-label="CHECKLIST DE CELO E IA"],
-    button[aria-label="LABORATORIO DE SIMULACION"] {
-      font-size: 10px !important;
-      letter-spacing: 0 !important;
-      padding: 9px 6px !important;
-      white-space: normal !important;
-      word-break: break-word !important;
-    }
+  /* ENCUADRES OSCUROS CON RELIEVE */
+  .ui-encuadre {
+    background: linear-gradient(145deg, rgba(42, 45, 52, 0.9), rgba(24, 24, 27, 0.95));
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .ui-encuadre:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 45px 0 rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
 
-    /* Texto de lectura */
-    .texto-lectura-grande {
-      font-size: 13px !important;
-    }
+  .encuadre-proestro { border-left: 6px solid #FF3366 !important; }
+  .encuadre-proestro:hover { box-shadow: -10px 0 30px -10px rgba(255, 51, 102, 0.5), 0 15px 45px 0 rgba(0, 0, 0, 0.8); }
 
-    /* Metricas: fuente reducida para no desbordar columnas */
-    [data-testid="stMetric"] {
-      padding: 8px !important;
-    }
-    [data-testid="stMetricLabel"] {
-      font-size: 11px !important;
-    }
-    [data-testid="stMetricValue"] {
-      font-size: 1.2rem !important;
-    }
+  .encuadre-estro { border-left: 6px solid #00E676 !important; }
+  .encuadre-estro:hover { box-shadow: -10px 0 30px -10px rgba(0, 230, 118, 0.5), 0 15px 45px 0 rgba(0, 0, 0, 0.8); }
+
+  .encuadre-metaestro { border-left: 6px solid #FF9933 !important; }
+  .encuadre-metaestro:hover { box-shadow: -10px 0 30px -10px rgba(255, 153, 51, 0.5), 0 15px 45px 0 rgba(0, 0, 0, 0.8); }
+
+  .encuadre-diestro { border-left: 6px solid #3399FF !important; }
+  .encuadre-diestro:hover { box-shadow: -10px 0 30px -10px rgba(51, 153, 255, 0.5), 0 15px 45px 0 rgba(0, 0, 0, 0.8); }
+  
+  .encuadre-alerta {
+    border: 2px solid #FF3366;
+    background: rgba(30, 10, 15, 0.9);
+  }
+
+  /* ==========================================================
+     SISTEMA DE DISEÑO DINÁMICO POR ESPECIE (AGRO-TECH)
+     ========================================================== */
+
+  /* 1. Tematización Dinámica (Master Classes y Variables CSS) */
+  .tema-bovino {
+    --color-especie: #00B4D8; /* Azul Tecnológico / Cian Profundo */
+    --color-especie-glow: rgba(0, 180, 216, 0.4);
+  }
+
+  .tema-porcino {
+    --color-especie: #F4A261; /* Ámbar / Naranja Terracota */
+    --color-especie-glow: rgba(244, 162, 97, 0.4);
+  }
+
+  .tema-ovino {
+    --color-especie: #E9C46A; /* Dorado Suave / Tierra */
+    --color-especie-glow: rgba(233, 196, 106, 0.4);
+  }
+
+  .tema-equino {
+    --color-especie: #7B2CBF; /* Púrpura Elegante / Índigo */
+    --color-especie-glow: rgba(123, 44, 191, 0.4);
+  }
+  
+  .tema-caprino {
+    --color-especie: #E76F51; /* Coral/Rojo Suave */
+    --color-especie-glow: rgba(231, 111, 81, 0.4);
+  }
+  
+  .tema-ave {
+    --color-especie: #2A9D8F; /* Verde Menta / Esmeralda Suave */
+    --color-especie-glow: rgba(42, 157, 143, 0.4);
+  }
+
+  /* 2. Zonas Interactivas y Glassmorphism */
+  .panel-interactivo {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--color-especie, #FFFFFF); /* Fino borde dinámico */
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Hover del panel interactivo (Efecto levante y glow) */
+  .panel-interactivo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 15px var(--color-especie-glow);
+  }
+
+  /* Efecto Focus en Controles y Sliders dentro del panel interactivo */
+  .panel-interactivo [data-baseweb="input"]:focus-within,
+  .panel-interactivo [data-baseweb="textarea"]:focus-within,
+  .panel-interactivo [data-testid="stRadio"] label:hover,
+  .panel-interactivo [data-testid="stCheckbox"] label:hover {
+    box-shadow: 0 0 10px var(--color-especie) !important;
+    border-color: var(--color-especie) !important;
+    transition: all 0.3s ease;
+  }
+
+  /* 3. Tipografía y Jerarquía Académica */
+  .panel-interactivo .texto-destacado {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  .panel-interactivo .metrica-economica,
+  .panel-interactivo .diagnostico-fisiologico {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: var(--color-especie) !important;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px 18px;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 10px 0;
+    text-shadow: 0 0 8px var(--color-especie-glow);
+    border-left: 4px solid var(--color-especie);
+  }
+
+  .panel-interactivo .texto-relleno {
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+    color: #B0B3B8 !important;
+    line-height: 1.6;
   }
 </style>
 """, unsafe_allow_html=True)
-
 
 # --- DATOS BIOLÓGICOS DEL PDF ---
 SPECIES_DATA = {
@@ -703,7 +938,6 @@ TIMELINE_DATA = {
   }
 }
 
-
 def generate_hormone_data(species, complication="Normal", pregnancy=False):
   data = SPECIES_DATA[species]
   days = data["cycle_duration"]
@@ -835,7 +1069,6 @@ def generate_hormone_data(species, complication="Normal", pregnancy=False):
     "Señal Materna": np.clip(senal_materna, 0, 100)
   })
 
-
 def get_current_phase(day, phases):
   for p in phases:
     if p["range"][0] <= day < p["range"][1]:
@@ -891,11 +1124,8 @@ def get_hud_diagnosis(day, phase_name, complication, pregnancy=False, species="B
   elif phase_name == "Diestro":
     return f"Día {day:.1f} - Normal (Diestro): Dominancia de P4 máxima. Útero preparado para posible gestación.", "info"
 
-
-
 # --- GESTIÓN DE ESTADOS (FLUJO DE PANTALLAS) ---
 
-@st.fragment
 def renderizar_simulador():
 
   # Callbacks para la navegacion interna (sin HTTP reload)
@@ -942,22 +1172,91 @@ def renderizar_simulador():
   with col_nav2:
     act_sec = st.session_state.seccion_activa
 
-    # Fases del Ciclo
-    fases_css = "border: 2px solid #00bcd4 !important; background-color: #00bcd4 !important; color: #000 !important; opacity: 1.0 !important;" if act_sec == "Fases del Ciclo Estral" else "background-color: rgba(0,188,212,0.25) !important; color: #00bcd4 !important; border: 1px solid #00bcd4 !important; opacity: 0.7 !important;"
-    st.markdown(f'<style>div[data-testid="column"]:nth-child(2) div[data-testid="stVerticalBlock"] div:nth-child(1) button {{ {fases_css} }}</style>', unsafe_allow_html=True)
-    if st.button("FASES DEL CICLO ESTRAL", key="btn_nav_fases", on_click=_ir_fases, use_container_width=True):
+    # ==========================================
+    # MAGIA CSS PARA LOS BOTONES DE NAVEGACIÓN
+    # ==========================================
+    # Determinamos qué botón está activo
+    es_fases = (act_sec == "Fases del Ciclo Estral")
+    es_check = (act_sec == "Checklist de Celo e IA")
+    es_simul = (act_sec == "Laboratorio de Simulacion")
+    
+    css_magico = f"""
+    <style>
+    /* ========================================================
+       ESTILO PARA BOTONES INACTIVOS EN LA COLUMNA DE NAVEGACIÓN
+       ======================================================== */
+    /* Cubrimos todas las versiones de Streamlit (column y stColumn) */
+    div[data-testid="column"]:nth-of-type(2) div.stButton > button[kind="secondary"],
+    div[data-testid="stColumn"]:nth-of-type(2) div.stButton > button[kind="secondary"] {{
+        background: linear-gradient(145deg, rgba(20,20,25,0.8) 0%, rgba(30,30,40,0.9) 100%) !important;
+        border: 1px solid rgba(var(--color-rgb), 0.3) !important;
+        border-left: 6px solid rgba(var(--color-rgb), 0.5) !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+        opacity: 0.7 !important;
+        transform: scale(0.98) !important;
+    }}
+    
+    div[data-testid="column"]:nth-of-type(2) div.stButton > button[kind="secondary"]:hover,
+    div[data-testid="stColumn"]:nth-of-type(2) div.stButton > button[kind="secondary"]:hover {{
+        opacity: 0.9 !important;
+        transform: scale(1) translateX(5px) !important;
+        border-left: 6px solid var(--color-hex) !important;
+        box-shadow: 0 8px 20px rgba(var(--color-rgb), 0.4) !important;
+        background: linear-gradient(145deg, rgba(30,30,35,0.9) 0%, rgba(var(--color-rgb), 0.2) 100%) !important;
+    }}
+
+    /* ========================================================
+       EL BOTÓN ACTIVO (MAGIA PURA) -> TARGETEADO VÍA kind="primary"
+       ======================================================== */
+    @keyframes pulseMagico {{
+        0% {{ box-shadow: 0 0 0 0 rgba(var(--color-rgb), 0.7); }}
+        70% {{ box-shadow: 0 0 0 15px rgba(var(--color-rgb), 0); }}
+        100% {{ box-shadow: 0 0 0 0 rgba(var(--color-rgb), 0); }}
+    }}
+    
+    /* El único botón primario será el que esté activo! */
+    div.stButton > button[kind="primary"] {{
+        background: linear-gradient(135deg, var(--color-hex) 0%, rgba(var(--color-rgb), 0.7) 100%) !important;
+        border: 2px solid #FFFFFF !important;
+        border-left: 10px solid #FFFFFF !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        opacity: 1 !important;
+        transform: scale(1.03) !important;
+        box-shadow: 0 15px 35px rgba(var(--color-rgb), 0.8) !important;
+        animation: pulseMagico 2.5s infinite !important;
+        z-index: 10 !important;
+    }}
+    
+    div.stButton > button[kind="primary"] p {{
+        color: var(--color-text-contrast) !important;
+        font-weight: 900 !important;
+        text-shadow: none !important;
+        letter-spacing: 2.5px !important;
+    }}
+    
+    /* Forzar textos para inactivos */
+    div[data-testid="column"]:nth-of-type(2) div.stButton > button[kind="secondary"] p,
+    div[data-testid="stColumn"]:nth-of-type(2) div.stButton > button[kind="secondary"] p {{
+        color: #FFFFFF !important;
+        font-weight: 900 !important;
+        letter-spacing: 1.5px !important;
+        text-transform: uppercase !important;
+    }}
+    </style>
+    """
+    st.markdown(css_magico, unsafe_allow_html=True)
+
+    if st.button("FASES DEL CICLO ESTRAL", key="btn_nav_fases", type="primary" if es_fases else "secondary", on_click=_ir_fases, use_container_width=True):
       pass
 
-    # Checklist
-    check_css = "border: 2px solid #ff9800 !important; background-color: #ff9800 !important; color: #000 !important; opacity: 1.0 !important;" if act_sec == "Checklist de Celo e IA" else "background-color: rgba(255,152,0,0.2) !important; color: #ff9800 !important; border: 1px solid #ff9800 !important; opacity: 0.7 !important;"
-    st.markdown(f'<style>div[data-testid="column"]:nth-child(2) div[data-testid="stVerticalBlock"] div:nth-child(2) button {{ {check_css} }}</style>', unsafe_allow_html=True)
-    if st.button("CHECKLIST DE CELO E IA", key="btn_nav_checklist", on_click=_ir_checklist, use_container_width=True):
+    if st.button("CHECKLIST DE CELO E IA", key="btn_nav_checklist", type="primary" if es_check else "secondary", on_click=_ir_checklist, use_container_width=True):
       pass
 
-    # Laboratorio
-    simul_css = "border: 2px solid #9c27b0 !important; background-color: #9c27b0 !important; color: #fff !important; opacity: 1.0 !important;" if act_sec == "Laboratorio de Simulacion" else "background-color: rgba(156,39,176,0.2) !important; color: #ce93d8 !important; border: 1px solid #9c27b0 !important; opacity: 0.7 !important;"
-    st.markdown(f'<style>div[data-testid="column"]:nth-child(2) div[data-testid="stVerticalBlock"] div:nth-child(3) button {{ {simul_css} }}</style>', unsafe_allow_html=True)
-    if st.button("LABORATORIO DE SIMULACION", key="btn_nav_simul", on_click=_ir_simulador, use_container_width=True):
+    if st.button("LABORATORIO DE SIMULACION", key="btn_nav_simul", type="primary" if es_simul else "secondary", on_click=_ir_simulador, use_container_width=True):
       pass
 
   # --- PARAMETROS FISIOLOGICOS — lectura directa desde session_state ---
@@ -971,6 +1270,7 @@ def renderizar_simulador():
     st.session_state.especie_seleccionada = "Bovino"
 
   species = st.session_state.especie_seleccionada
+  aplicar_tema_dinamico(species)
   data = SPECIES_DATA[species]
 
   # Tarjetas de parametros en tres columnas responsivas (se apilan en movil)
@@ -1029,9 +1329,49 @@ def renderizar_simulador():
   # --- SECCIÓN 1: FASES DEL CICLO DINÁMICAS ---
   if st.session_state.seccion_activa == "Fases del Ciclo Estral":
     st.markdown(f"""
-    <div class='glass-card glass-cyan animate-fade-in' style='padding: 20px;'>
-      <h3 style='margin-top:0; color:#4CAF50;'> Línea de Tiempo Fisiológica: {species}</h3>
-      <p style='margin-bottom:0; color:#8b949e;'>Dinámica hormonal y biológica ajustada específicamente para el modelo <b>{species}</b>.</p>
+    <style>
+      .section-header-jump {{
+          background: linear-gradient(135deg, rgba(var(--color-rgb), 0.15) 0%, rgba(26,28,35,0.95) 100%);
+          border-left: 8px solid var(--color-hex);
+          border-radius: 12px;
+          padding: 25px 30px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          margin-bottom: 25px;
+          position: relative;
+          overflow: hidden;
+      }}
+      .section-header-jump::before {{
+          content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+          transform: skewX(-20deg); transition: all 0.7s ease;
+      }}
+      .section-header-jump:hover::before {{
+          left: 200%;
+      }}
+      .section-header-jump:hover {{
+          transform: translateY(-8px) scale(1.01);
+          box-shadow: 0 15px 35px rgba(var(--color-rgb), 0.5);
+          border-left-color: #FFF;
+      }}
+      .section-header-jump h3 {{
+          margin-top: 0; color: var(--color-hex); font-weight: 900; 
+          font-size: 1.8rem; text-transform: uppercase; letter-spacing: 1.5px;
+          text-shadow: 0 2px 10px rgba(var(--color-rgb), 0.4);
+          margin-bottom: 8px;
+      }}
+      .section-header-jump p {{
+          margin-bottom: 0; color: #E0E4E8; font-size: 1.15rem; font-weight: 500;
+          line-height: 1.5;
+      }}
+      .section-header-jump p b {{
+          color: #FFF; background-color: var(--color-hex); padding: 2px 8px; 
+          border-radius: 4px; font-weight: 900; text-transform: uppercase;
+      }}
+    </style>
+    <div class='section-header-jump animate-fade-in'>
+      <h3>⏱️ Línea de Tiempo Fisiológica: {species}</h3>
+      <p>Dinámica hormonal y biológica ajustada específicamente para el modelo <b>{species}</b>.</p>
     </div>
     """, unsafe_allow_html=True)
   
@@ -1067,11 +1407,11 @@ def renderizar_simulador():
         h_name, h_color, h_icon = phase_headers[i]
         key = phase_keys[i]
         st.markdown(f"""
-        <div class="glass-card {glass_styles[i]} animate-fade-in" style="height: 100%; padding: 20px; background: {bg_colors[i]};">
+        <div class="ui-encuadre encuadre-{key} animate-fade-in" style="height: 100%;">
           <h3 style="color: {h_color}; margin-top:0; border-bottom: 1px solid {border_rgbas[i]}; padding-bottom: 10px;">{h_icon} {h_name}</h3>
           <p style="font-size: 0.85rem; color:#A0AAB5; margin-top: 10px;"><i>️ {sd[key]['dur']}</i></p>
-          <p style="font-size: 1.1rem; color: #fff;">{sd[key]['icon']} <b>{sd[key]['title']}</b></p>
-          <p class="texto-lectura-grande" style="font-size: 0.95rem !important;">{sd[key]['text']}</p>
+          <p class="text-heavy text-neon-orange" style="font-size: 1.2rem !important; margin-bottom: 5px;">{sd[key]['icon']} {sd[key]['title']}</p>
+          <p class="text-heavy" style="font-weight: 500 !important; font-size: 1.1rem !important;">{sd[key]['text']}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1079,9 +1419,9 @@ def renderizar_simulador():
   # --- SECCIÓN 2: CALCULADORA DE DIAGNÓSTICO E IA ---
   if st.session_state.seccion_activa == "Checklist de Celo e IA":
     st.markdown("""
-    <div class='glass-card glass-emerald animate-fade-in' style='padding: 20px;'>
-      <h3 style='margin-top:0; color:#00CC99;'> Calculadora Diagnóstica y Decisiones Clínicas</h3>
-      <p style='margin-bottom:0; color:#8B949E;'>Evaluación interactiva del paciente y análisis de impacto económico en finca.</p>
+    <div class='section-header-jump animate-fade-in'>
+      <h3>🩺 Calculadora Diagnóstica y Decisiones Clínicas</h3>
+      <p>Evaluación interactiva del paciente y análisis de impacto <b>Económico en Finca</b>.</p>
     </div>
     """, unsafe_allow_html=True)
   
@@ -1092,8 +1432,8 @@ def renderizar_simulador():
       with st.container(border=False):
         score_label = "Score de Postura" if species == "Ave" else "Score de Celo"
         st.markdown(f"""
-        <div class='glass-card glass-orange' style='margin-bottom:15px; padding: 15px 20px;'>
-          <h4 style='margin:0; color:#FF9933;'>️ {score_label} ({species})</h4>
+        <div class='tinted-card' style='padding: 15px 20px !important;'>
+          <h4 class='gradient-title' style='margin:0; font-size: 1.3rem;'>📋 {score_label} ({species})</h4>
         </div>
         """, unsafe_allow_html=True)
         score = 0
@@ -1136,8 +1476,8 @@ def renderizar_simulador():
       with st.container(border=False):
         ia_label = "Manejo Reproductivo" if species == "Ave" else "Decisiones de IA"
         st.markdown(f"""
-        <div class='glass-card glass-cyan' style='margin-bottom:15px; padding: 15px 20px;'>
-          <h4 style='margin:0; color:#4CAF50;'> {ia_label} ({species})</h4>
+        <div class='tinted-card' style='padding: 15px 20px !important;'>
+          <h4 class='gradient-title' style='margin:0; font-size: 1.3rem;'>🎯 {ia_label} ({species})</h4>
         </div>
         """, unsafe_allow_html=True)
       
@@ -1155,17 +1495,35 @@ def renderizar_simulador():
           hora_celo = st.session_state.get("hora_celo_radio", "Celo Detectado en la Mañana (AM - ej. 07:00 AM)")
           st.markdown("<br>", unsafe_allow_html=True)
           if "AM" in hora_celo:
-            st.success(" **Ventana Óptima de IA:** Inseminar hoy por la tarde (estimado 3:00 PM - 5:00 PM). Ovulación estimada: 7:00 PM (12 horas post-celo).")
+            st.markdown(f"""
+            <div class="tinted-card">
+                <div class="agro-badge">REGLA AM/PM</div>
+                <h3 class="gradient-title">🎯 Ventana Óptima de IA</h3>
+                <p style="font-size: 1.1rem; color: #E0E0E0; line-height: 1.6;">
+                    Inseminar hoy por la tarde (estimado 3:00 PM - 5:00 PM).<br>
+                    <strong>Ovulación estimada:</strong> 7:00 PM (12 horas post-celo).
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
           else:
-            st.info(" **Ventana Óptima de IA:** Inseminar mañana por la mañana a primera hora (estimado 7:00 AM). Ovulación estimada: 5:00 AM del día siguiente.")
+            st.markdown(f"""
+            <div class="tinted-card">
+                <div class="agro-badge">REGLA AM/PM</div>
+                <h3 class="gradient-title">🎯 Ventana Óptima de IA</h3>
+                <p style="font-size: 1.1rem; color: #E0E0E0; line-height: 1.6;">
+                    Inseminar mañana por la mañana a primera hora (estimado 7:00 AM).<br>
+                    <strong>Ovulación estimada:</strong> 5:00 AM del día siguiente.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
         else:
           for regla in data["ia_window"]:
             st.markdown(f"- {regla}")
           
       with st.container(border=False):
         st.markdown("""
-        <div class='glass-card glass-emerald' style='margin-bottom:15px; padding: 15px 20px;'>
-          <h4 style='margin:0; color:#00CC99;'> Retorno de Inversión (ROI)</h4>
+        <div class='tinted-card' style='padding: 15px 20px !important;'>
+          <h4 class='gradient-title' style='margin:0; font-size: 1.3rem;'>💰 Retorno de Inversión (ROI)</h4>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1220,18 +1578,42 @@ def renderizar_simulador():
         tech = st.session_state.get("estrategia_deteccion_select", roi["opciones"][0])
       
         if tech == roi["opciones"][0]:
-          st.error(roi["obs_msg"])
+          obs_text = roi["obs_msg"].replace("**", "")
+          parts = obs_text.split(". ", 1)
+          alert_part = parts[0] + "." if len(parts) > 1 else obs_text
+          text_part = parts[1] if len(parts) > 1 else ""
+          st.markdown(f"""
+          <div class="tinted-card">
+              <span class="agro-badge" style="background-color: #FF3366 !important; color: white !important;">ALERTA ECONÓMICA</span>
+              <h2 class="gradient-title">⚠️ {alert_part}</h2>
+              <p style="font-size: 1rem; color: #B0B3B8;">
+                  {text_part}
+              </p>
+          </div>
+          """, unsafe_allow_html=True)
         else:
-          st.success(roi["tech_msg"])
+          tech_text = roi["tech_msg"].replace("**", "")
+          parts = tech_text.split(". ", 1)
+          alert_part = parts[0] + "." if len(parts) > 1 else tech_text
+          text_part = parts[1] if len(parts) > 1 else ""
+          st.markdown(f"""
+          <div class="tinted-card">
+              <span class="agro-badge">ROI POSITIVO</span>
+              <h2 class="gradient-title">🚀 {alert_part}</h2>
+              <p style="font-size: 1rem; color: #B0B3B8;">
+                  {text_part}
+              </p>
+          </div>
+          """, unsafe_allow_html=True)
   
   # --- SECCIÓN 3: LABORATORIO DE SIMULACIÓN Y COMPLICACIONES ---
   if st.session_state.seccion_activa == "Laboratorio de Simulacion":
   
     # 1. Modificadores de Salud Condicionales
     st.markdown("""
-    <div class='glass-card glass-orange animate-fade-in' style='padding: 20px;'>
-      <h3 style='margin-top:0; color:#FF9933;'> Modificadores de Salud y Estado de Gestación</h3>
-      <p style='margin-bottom:0; color:#8B949E;'>Configura las variables patológicas para simular el comportamiento endocrino.</p>
+    <div class='section-header-jump animate-fade-in'>
+      <h3>🧬 Modificadores de Salud y Estado de Gestación</h3>
+      <p>Configura las variables patológicas para simular el <b>Comportamiento Endocrino</b>.</p>
     </div>
     """, unsafe_allow_html=True)
   
@@ -1438,175 +1820,208 @@ def renderizar_simulador():
         st.session_state.is_playing = False
         st.session_state.base_fig = None
 
-    col_play, col_slider = st.columns([1.2, 4])
-    
-    with col_play:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.session_state.is_playing:
-            if st.button("⏸️ Pausar", use_container_width=True):
-                st.session_state.is_playing = False
-                st.rerun()
-        else:
-            if st.button("▶️ Reproducir", use_container_width=True):
-                if st.session_state.current_time >= max_days:
-                    st.session_state.current_time = 0.0
-                st.session_state.is_playing = True
-                st.rerun()
-  
-    with col_slider:
-        slider_label = f"Desliza para avanzar {'la Hora' if species == 'Ave' else 'el Día'} del Ciclo manualmente:"
-        # Usamos value en lugar de key para evitar StreamlitAPIException al mutarlo en el bucle
-        tiempo_actual = st.slider(slider_label, min_value=0.0, max_value=float(max_days), value=float(st.session_state.current_time), step=0.1)
-        
-        # Si NO está reproduciendo automáticamente, permitimos actualización manual
-        if not st.session_state.is_playing:
-            if abs(tiempo_actual - st.session_state.current_time) > 0.01:
-                st.session_state.current_time = tiempo_actual  
-    # ---------------------------
-    # Generar HUD states y KPIs dinámicos
-    # ---------------------------
-    idx = (df["Día"] - tiempo_actual).abs().idxmin()
-    row = df.iloc[idx]
-    
-    c_phase = get_current_phase(row["Día"], data["phases"])
-    diag_txt, diag_typ = get_hud_diagnosis(row["Día"], c_phase["name"], complication, pregnancy, species)
-    
-    # Render HUD
-    if diag_typ == "success":
-        st.success(diag_txt)
-    elif diag_typ == "error":
-        st.error(diag_txt)
-    elif diag_typ == "warning":
-        st.warning(diag_txt)
-    else:
-        st.info(diag_txt)
-        
-    # Render KPIs
-    matLabel = "🟠 PGF2α (%)"
-    matKey = "PGF2α"
-    if pregnancy:
-        if species == "Porcino": matLabel = " Estrógenos Emb. (%)"
-        elif species == "Equino": matLabel = " Movilidad Emb. (%)"
-        else: matLabel = " IFN-τ (%)"
-        matKey = "Señal Materna"
-        
-    kpi_html = f"""
-    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: rgba(22, 27, 34, 0.6); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
-        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">🟣 FSH (%)</span><span style="font-size: 28px; font-weight: 800; color: #BC8BFF;">{row['FSH']:.1f}%</span></div>
-        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;"> LH (%)</span><span style="font-size: 28px; font-weight: 800; color: #FF3366;">{row['LH']:.1f}%</span></div>
-        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;"> E2 (%)</span><span style="font-size: 28px; font-weight: 800; color: #58A6FF;">{row['Estradiol (E2)']:.1f}%</span></div>
-        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">🟢 P4 (%)</span><span style="font-size: 28px; font-weight: 800; color: #00CC99;">{row['Progesterona (P4)']:.1f}%</span></div>
-        <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">{matLabel}</span><span style="font-size: 28px; font-weight: 800; color: #FF9933;">{row[matKey]:.1f}%</span></div>
-    </div>
-    """
-    st.markdown(kpi_html, unsafe_allow_html=True)
-  
-    # ---------------------------
-    # Gráfica Plotly — Arquitectura st.empty() + while loop (sin st.rerun())
-    # Elimina el flickering y los saltos de tiempo al actualizar el placeholder
-    # in-place en lugar de forzar un re-render completo del script.
-    # ---------------------------
-    import plotly.graph_objects as go
-    import time
+    # ── JS: Preservar posición de scroll en cada fragment-rerun ──────────────
+    import streamlit.components.v1 as components
+    components.html("""
+    <script>
+    (function() {
+        var KEY = 'st_sim_scroll';
+        var p = window.parent;
+        var saved = sessionStorage.getItem(KEY);
+        if (saved !== null) { p.scrollTo(0, parseInt(saved, 10)); }
+        p.addEventListener('scroll', function() {
+            sessionStorage.setItem(KEY, p.scrollY);
+        }, { passive: true });
+    })();
+    </script>
+    """, height=0, scrolling=False)
 
-    dayLabel   = 'HORA' if species == 'Ave' else 'DÍA'
-    xAxisTitle = 'Horas del Ciclo Ovulatorio' if species == 'Ave' else 'Días del Ciclo'
-
-    # ── Layout estático: se construye UNA sola vez por escenario ──────────────
-    if "base_fig" not in st.session_state or st.session_state.base_fig is None:
+    # ── Layout estático 2D Optimizado (Anti-Parpadeo) ──────────
+    if "base_fig" not in st.session_state or st.session_state.get('prev_species') != species:
+        import plotly.graph_objects as go
+        import numpy as np
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name='FSH',
-                                 line=dict(color='#BC8BFF', width=3.5)))
-        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name='LH',
-                                 line=dict(color='#FF3366', width=3.5)))
-        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name='Estradiol (E2)',
-                                 line=dict(color='#58A6FF', width=3.5)))
-        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name='Progesterona (P4)',
-                                 line=dict(color='#00CC99', width=3.5)))
-        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', name=matKey,
-                                 line=dict(color='#FF9933', width=3.5)))
+        
+        # Inicializamos con el array COMPLETO de x, pero y en NaN para evitar mutar el tamaño
+        x_full = df["Día"].values
+        y_empty = np.full_like(x_full, np.nan, dtype=float)
+        
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='FSH', line=dict(color='#BC8BFF', width=3.5)))
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='LH', line=dict(color='#FF3366', width=3.5)))
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='Estradiol (E2)', line=dict(color='#58A6FF', width=3.5)))
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='Progesterona (P4)', line=dict(color='#00CC99', width=3.5)))
+        
+        matKey_init = "Señal Materna" if pregnancy else "PGF2α"
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name=matKey_init, line=dict(color='#FF9933', width=3.5)))
+
+        dayLabel   = 'HORA' if species == 'Ave' else 'DÍA'
+        xAxisTitle = 'Horas del Ciclo Ovulatorio' if species == 'Ave' else 'Días del Ciclo'
 
         fig.update_layout(
-            template='plotly_dark',
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            dragmode=False,
+            template='plotly_dark', plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', dragmode=False,
             margin=dict(l=20, r=20, t=30, b=20),
-            xaxis=dict(
-                title=xAxisTitle,
-                range=[0, max_days],
-                gridcolor='rgba(255,255,255,0.05)',
-                fixedrange=True
-            ),
-            yaxis=dict(
-                title='Concentración (%)',
-                range=[0, 105],
-                gridcolor='rgba(255,255,255,0.05)',
-                fixedrange=True
-            ),
-            legend=dict(orientation='h', yanchor='bottom', y=1.05, xanchor='center', x=0.5),
-            height=400
+            uirevision='constant', # CLAVE: anti-parpadeo
+            xaxis=dict(title=xAxisTitle, range=[0, max_days], gridcolor='rgba(255,255,255,0.05)', fixedrange=True),
+            yaxis=dict(title='Concentración (%)', range=[0, 105], gridcolor='rgba(255,255,255,0.05)', fixedrange=True),
+            legend=dict(orientation='h', yanchor='bottom', y=1.05, xanchor='center', x=0.5), height=400
         )
-
-        fig.add_shape(type='line', x0=0, x1=0, y0=0, y1=105,
-                      line=dict(color='#FFF', width=3))
+        fig.add_shape(type='line', x0=0, x1=0, y0=0, y1=105, line=dict(color='#FFF', width=3))
         fig.add_annotation(
             x=0.02, y=0.98, xref='paper', yref='paper', text="", showarrow=False,
             xanchor='left', yanchor='top', font=dict(color='#FFF', size=20),
             bgcolor='rgba(0,0,0,0.8)', bordercolor='#FFF', borderpad=6, borderwidth=1
         )
         st.session_state.base_fig = fig
+        st.session_state.prev_species = species
 
-    # ── Placeholder dedicado: el gráfico nunca se destruye ni se recrea ───────
-    grafico_placeholder = st.empty()
-    fig_plot = st.session_state.base_fig
+    col_play, col_slider = st.columns([1.2, 4])
 
-    def _render_frame(t_actual):
-        """Actualiza solo los arrays de datos y el cursor; NO toca el layout."""
-        mask   = df["Día"].values <= t_actual
-        x_vals = df["Día"].values[mask]
+    
+    # ── 1. Callbacks Puros ────────────────────────────────────────────────────
+    def cb_play():
+        if st.session_state.current_time >= max_days:
+            st.session_state.current_time = 0.0
+        st.session_state.is_playing = True
 
-        fig_plot.data[0].x = x_vals;  fig_plot.data[0].y = df["FSH"].values[mask]
-        fig_plot.data[1].x = x_vals;  fig_plot.data[1].y = df["LH"].values[mask]
-        fig_plot.data[2].x = x_vals;  fig_plot.data[2].y = df["Estradiol (E2)"].values[mask]
-        fig_plot.data[3].x = x_vals;  fig_plot.data[3].y = df["Progesterona (P4)"].values[mask]
-        fig_plot.data[4].x = x_vals;  fig_plot.data[4].y = df[matKey].values[mask]
+    def cb_pause():
+        st.session_state.is_playing = False
 
-        fig_plot.layout.shapes[0].x0      = t_actual
-        fig_plot.layout.shapes[0].x1      = t_actual
-        fig_plot.layout.annotations[0].text = f"{dayLabel} {t_actual:.1f}"
+    def cb_slider():
+        st.session_state.current_time = st.session_state.slider_val
 
-        # Actualización in-place: solo cambia este contenedor,
-        # el resto de la UI permanece completamente estático.
-        grafico_placeholder.plotly_chart(
-            fig_plot,
-            use_container_width=True,
-            config={'staticPlot': True, 'displayModeBar': False}
+
+    # ── Layout estático 2D Optimizado (Anti-Parpadeo) ──────────
+    if "base_fig" not in st.session_state or st.session_state.get('prev_species') != species:
+        import plotly.graph_objects as go
+        import numpy as np
+        fig = go.Figure()
+        
+        # Inicializamos con el array COMPLETO de x, pero y en NaN para evitar mutar el tamaño
+        x_full = df["Día"].values
+        y_empty = np.full_like(x_full, np.nan, dtype=float)
+        
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='FSH', line=dict(color='#BC8BFF', width=3.5)))
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='LH', line=dict(color='#FF3366', width=3.5)))
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='Estradiol (E2)', line=dict(color='#58A6FF', width=3.5)))
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='Progesterona (P4)', line=dict(color='#00CC99', width=3.5)))
+        
+        matKey_init = "Señal Materna" if pregnancy else "PGF2α"
+        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name=matKey_init, line=dict(color='#FF9933', width=3.5)))
+
+        dayLabel   = 'HORA' if species == 'Ave' else 'DÍA'
+        xAxisTitle = 'Horas del Ciclo Ovulatorio' if species == 'Ave' else 'Días del Ciclo'
+
+        fig.update_layout(
+            template='plotly_dark', plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', dragmode=False,
+            margin=dict(l=20, r=20, t=30, b=20),
+            uirevision='constant', # CLAVE: anti-parpadeo
+            xaxis=dict(title=xAxisTitle, range=[0, max_days], gridcolor='rgba(255,255,255,0.05)', fixedrange=True),
+            yaxis=dict(title='Concentración (%)', range=[0, 105], gridcolor='rgba(255,255,255,0.05)', fixedrange=True),
+            legend=dict(orientation='h', yanchor='bottom', y=1.05, xanchor='center', x=0.5), height=400
+        )
+        fig.add_shape(type='line', x0=0, x1=0, y0=0, y1=105, line=dict(color='#FFF', width=3))
+        fig.add_annotation(
+            x=0.02, y=0.98, xref='paper', yref='paper', text="", showarrow=False,
+            xanchor='left', yanchor='top', font=dict(color='#FFF', size=20),
+            bgcolor='rgba(0,0,0,0.8)', bordercolor='#FFF', borderpad=6, borderwidth=1
+        )
+        st.session_state.base_fig = fig
+        st.session_state.prev_species = species
+
+    col_play, col_slider = st.columns([1.2, 4])
+    
+    with col_play:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.session_state.get('is_playing', False):
+            st.button("⏸️ Pausar", use_container_width=True, on_click=cb_pause, key="btn_pause")
+        else:
+            st.button("▶️ Reproducir", use_container_width=True, on_click=cb_play, key="btn_play")
+
+    with col_slider:
+        slider_label = f"Desliza para avanzar {'la Hora' if species == 'Ave' else 'el Día'} del Ciclo manualmente:"
+        st.slider(
+            slider_label, 
+            min_value=0.0, 
+            max_value=float(max_days), 
+            value=float(st.session_state.current_time), 
+            step=0.1,
+            key="slider_val",
+            on_change=cb_slider
         )
 
-    # ── Render inicial (frame estático o primer cuadro de animación) ──────────
-    _render_frame(tiempo_actual)
-
-    # ── Bucle de animación continua (sin st.rerun()) ──────────────────────────
-    # El bucle while corre en el mismo hilo de Python y actualiza el
-    # placeholder in-place: el DOM del navegador recibe SOLO el diff del
-    # gráfico, sin redibujar ningún otro elemento de la página.
-    if st.session_state.is_playing:
-        # Paso calibrado: 0.1 unidades por cuadro → velocidad perceptualmente
-        # suave; sleep de 0.05 s da ~20 fps reales en el round-trip HTTP de
-        # Streamlit (límite práctico del protocolo websocket).
-        paso_animacion = 0.1
+    # ── 2. Aislamiento de Renderizado (Streamlit Fragments) ───────────────────
+    # Evita el UI Reflow (DOM Jumping) al actualizar solo este bloque de la app.
+    
+    # Ajustado a 15 FPS (0.066s) para máxima estabilidad en PCs de gama baja
+    _interval = 0.066 if st.session_state.get('is_playing', False) else None
+    
+    @st.fragment(run_every=_interval)
+    def renderizar_tiempo_real():
         t = st.session_state.current_time
+        
+        # ─ Motor de Tiempo Interno ─
+        if st.session_state.get('is_playing', False):
+            paso = max_days / 300.0  # 20 segundos totales a 15 FPS (300 frames)
+            t = min(t + paso, max_days)
+            st.session_state.current_time = t
+            if t >= max_days:
+                st.session_state.is_playing = False
+                st.rerun(scope="fragment")
 
-        while st.session_state.is_playing and t < max_days:
-            t = min(t + paso_animacion, max_days)
-            _render_frame(t)
-            time.sleep(0.05)
+        idx = (df["Día"] - t).abs().idxmin()
+        row = df.iloc[idx]
+        
+        c_phase = get_current_phase(row["Día"], data["phases"])
+        diag_txt, diag_typ = get_hud_diagnosis(row["Día"], c_phase["name"], complication, pregnancy, species)
+        
+        if diag_typ == "success": st.success(diag_txt)
+        elif diag_typ == "error": st.error(diag_txt)
+        elif diag_typ == "warning": st.warning(diag_txt)
+        else: st.info(diag_txt)
+            
+        matLabel = "🟠 PGF2α (%)"
+        matKey   = "PGF2α"
+        if pregnancy:
+            if species == "Porcino":  matLabel = " Estrógenos Emb. (%)"
+            elif species == "Equino": matLabel = " Movilidad Emb. (%)"
+            else:                     matLabel = " IFN-τ (%)"
+            matKey = "Señal Materna"
+            
+        kpi_html = f'''
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: rgba(22, 27, 34, 0.6); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">🟣 FSH (%)</span><span style="font-size: 28px; font-weight: 800; color: #BC8BFF;">{row['FSH']:.1f}%</span></div>
+            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;"> LH (%)</span><span style="font-size: 28px; font-weight: 800; color: #FF3366;">{row['LH']:.1f}%</span></div>
+            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;"> E2 (%)</span><span style="font-size: 28px; font-weight: 800; color: #58A6FF;">{row['Estradiol (E2)']:.1f}%</span></div>
+            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">🟢 P4 (%)</span><span style="font-size: 28px; font-weight: 800; color: #00CC99;">{row['Progesterona (P4)']:.1f}%</span></div>
+            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">{matLabel}</span><span style="font-size: 28px; font-weight: 800; color: #FF9933;">{row[matKey]:.1f}%</span></div>
+        </div>
+        '''
+        st.markdown(kpi_html, unsafe_allow_html=True)
 
-        # Al terminar el bucle: persiste el tiempo final y detiene la reproducción
-        st.session_state.current_time = t
-        if t >= max_days:
-            st.session_state.is_playing = False
+        # ── Actualización del Gráfico 2D Plotly Optimizada (Anti-Parpadeo) ───────────
+        import numpy as np
+        import copy
+        
+        _fig = copy.deepcopy(st.session_state.base_fig)
+        
+        mask = df["Día"].values <= t
+        _fig.data[0].y = np.where(mask, df["FSH"].values, np.nan)
+        _fig.data[1].y = np.where(mask, df["LH"].values, np.nan)
+        _fig.data[2].y = np.where(mask, df["Estradiol (E2)"].values, np.nan)
+        _fig.data[3].y = np.where(mask, df["Progesterona (P4)"].values, np.nan)
+        _fig.data[4].y = np.where(mask, df[matKey].values, np.nan)
+        
+        _fig.layout.shapes[0].x0 = t
+        _fig.layout.shapes[0].x1 = t
+        
+        dayLabel   = 'HORA' if species == 'Ave' else 'DÍA'
+        _fig.layout.annotations[0].text = f"{dayLabel} {t:.1f}"
+
+        # Renderizar en contenedor estable
+        st.plotly_chart(_fig, use_container_width=True, config={'staticPlot': True, 'displayModeBar': False})
+
+    # Iniciar Fragmento
+    renderizar_tiempo_real()
 
 if st.session_state.etapa_actual == "portada":
   st.markdown("<br><br><br><br>", unsafe_allow_html=True)
@@ -1653,31 +2068,69 @@ if st.session_state.etapa_actual == "portada":
   with col2:
     st.markdown("""
     <style>
-    div.stButton > button:first-child {
-      background: linear-gradient(135deg, #4CAF50, #4facfe) !important;
+    /* ========================================================
+       BOTÓN GIGANTE INICIAR SIMULACIÓN (PRIMARY)
+       ======================================================== */
+    div.stButton > button[kind="primary"] {
+      background: linear-gradient(135deg, #00E676 0%, #1DE9B6 100%) !important;
       color: #000000 !important;
-      padding: 16px 32px !important;
-      border-radius: 12px !important;
-      border: none !important;
-      box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4) !important;
-      transition: all 0.3s ease-in-out !important;
-      animation: pulseGlow 3s infinite;
+      padding: 22px 45px !important;
+      border-radius: 16px !important;
+      border: 3px solid #FFFFFF !important;
+      box-shadow: 0 10px 35px rgba(0, 230, 118, 0.6), inset 0 0 20px rgba(255,255,255,0.4) !important;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+      animation: pulseGlowSim 2.5s infinite;
+      width: 100% !important;
     }
-    div.stButton > button:first-child:hover {
-      transform: scale(1.05) translateY(-2px) !important;
-      box-shadow: 0 10px 40px rgba(0, 242, 254, 0.8) !important;
+    @keyframes pulseGlowSim {
+      0% { box-shadow: 0 10px 30px rgba(0, 230, 118, 0.5); }
+      50% { box-shadow: 0 15px 50px rgba(29, 233, 182, 0.9), 0 0 20px rgba(255,255,255,0.8); transform: translateY(-4px) scale(1.02); }
+      100% { box-shadow: 0 10px 30px rgba(0, 230, 118, 0.5); }
     }
-    div.stButton > button:first-child p {
-      font-size: 1.3rem !important;
+    div.stButton > button[kind="primary"]:hover {
+      background: linear-gradient(135deg, #FFFFFF 0%, #B2FF59 100%) !important;
+      transform: scale(1.06) translateY(-6px) !important;
+      border-color: #00E676 !important;
+      box-shadow: 0 20px 50px rgba(29, 233, 182, 0.8) !important;
+    }
+    div.stButton > button[kind="primary"] p {
+      font-size: 1.45rem !important;
       font-weight: 900 !important;
       text-transform: uppercase !important;
-      letter-spacing: 1.5px !important;
+      letter-spacing: 4px !important;
       color: #000000 !important;
       margin: 0 !important;
+      text-shadow: 0 2px 4px rgba(255,255,255,0.8) !important;
+    }
+
+    /* ========================================================
+       BOTONES SECUNDARIOS (PRÁCTICA Y EVALUACIÓN)
+       ======================================================== */
+    div.stButton > button[kind="secondary"] {
+      background: linear-gradient(145deg, rgba(30,35,45, 0.9) 0%, rgba(15,20,25, 0.95) 100%) !important;
+      border: 1px solid rgba(255,255,255,0.2) !important;
+      border-radius: 12px !important;
+      color: #FFFFFF !important;
+      padding: 16px !important;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5) !important;
+      transition: all 0.3s ease !important;
+    }
+    div.stButton > button[kind="secondary"]:hover {
+      background: linear-gradient(145deg, rgba(50,55,70, 0.9) 0%, rgba(30,35,45, 0.95) 100%) !important;
+      border-color: #FFFFFF !important;
+      transform: translateY(-3px) !important;
+      box-shadow: 0 10px 25px rgba(255,255,255,0.1) !important;
+    }
+    div.stButton > button[kind="secondary"] p {
+      color: #FFFFFF !important;
+      font-weight: 800 !important;
+      letter-spacing: 1.5px !important;
+      font-size: 1rem !important;
+      text-transform: uppercase !important;
     }
     </style>
     """, unsafe_allow_html=True)
-    if st.button("INICIAR SIMULACION", use_container_width=True, key="btn_iniciar_sim"):
+    if st.button("INICIAR SIMULACION", use_container_width=True, key="btn_iniciar_sim", type="primary"):
       st.session_state.etapa_actual = "seleccion"
       st.rerun()
 
@@ -1687,21 +2140,21 @@ if st.session_state.etapa_actual == "portada":
   col_b1, col_b2, col_b3 = st.columns([1, 1.2, 1])
   with col_b2:
     st.markdown(
-      "<div style='display:flex;gap:12px;margin-bottom:14px;'>"
+      "<div style='display:flex;gap:20px;margin-bottom:20px;'>"
 
-      "<div style='flex:1;background:rgba(76,175,80,0.08);padding:16px 14px;"
-      "border-radius:12px;border:1px solid rgba(76,175,80,0.3);text-align:center;'>"
-      "<p style='margin:0 0 4px 0;color:#4CAF50;font-weight:700;font-size:0.76rem;"
-      "letter-spacing:1.5px;text-transform:uppercase;'>Banco de Practica</p>"
-      "<p style='margin:0;color:#78909C;font-size:0.76rem;line-height:1.4;'>"
-      "50 preguntas interactivas.<br>Libre. Sin contrasena.</p></div>"
+      "<div style='flex:1;background:linear-gradient(145deg, rgba(76,175,80,0.1) 0%, rgba(20,40,25,0.85) 100%);padding:22px 18px;"
+      "border-radius:16px;border:1px solid rgba(76,175,80,0.4);border-top:5px solid #00E676;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.6);'>"
+      "<p style='margin:0 0 10px 0;color:#00E676;font-weight:900;font-size:1.05rem;"
+      "letter-spacing:2px;text-transform:uppercase;text-shadow:0 2px 8px rgba(0,230,118,0.4);'>Banco de Práctica</p>"
+      "<p style='margin:0;color:#E0E0E0;font-size:0.85rem;line-height:1.6;'>"
+      "<b>50 preguntas interactivas.</b><br>Acceso libre. Sin contraseña.</p></div>"
 
-      "<div style='flex:1;background:rgba(156,39,176,0.08);padding:16px 14px;"
-      "border-radius:12px;border:1px solid rgba(156,39,176,0.3);text-align:center;'>"
-      "<p style='margin:0 0 4px 0;color:#CE93D8;font-weight:700;font-size:0.76rem;"
-      "letter-spacing:1.5px;text-transform:uppercase;'>Evaluacion Formal</p>"
-      "<p style='margin:0;color:#78909C;font-size:0.76rem;line-height:1.4;'>"
-      "20 aleatorias. Contrasena.<br>Umbral: 80%.</p></div>"
+      "<div style='flex:1;background:linear-gradient(145deg, rgba(156,39,176,0.1) 0%, rgba(40,20,45,0.85) 100%);padding:22px 18px;"
+      "border-radius:16px;border:1px solid rgba(156,39,176,0.4);border-top:5px solid #E040FB;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.6);'>"
+      "<p style='margin:0 0 10px 0;color:#E040FB;font-weight:900;font-size:1.05rem;"
+      "letter-spacing:2px;text-transform:uppercase;text-shadow:0 2px 8px rgba(224,64,251,0.4);'>Evaluación Formal</p>"
+      "<p style='margin:0;color:#E0E0E0;font-size:0.85rem;line-height:1.6;'>"
+      "<b>20 aleatorias. Contraseña.</b><br>Umbral de aprobación: 80%.</p></div>"
 
       "</div>",
       unsafe_allow_html=True
@@ -1741,39 +2194,184 @@ elif st.session_state.etapa_actual == "seleccion":
       data = f.read()
     return base64.b64encode(data).decode()
 
+  def generar_tarjeta_animada(nombre_especie, img_url, duracion, ovulacion, r_materno, c_hex, c_rgb):
+      html_card = f"""
+      <style>
+          /* 1. Contenedor Dashboard de la Tarjeta */
+          .card-wrapper-{nombre_especie.lower()} {{
+              background-color: #1A1C23;
+              border-radius: 12px;
+              border-left: 6px solid {c_hex};
+              padding: 20px;
+              margin-bottom: 0;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+              transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+              position: relative;
+          }}
+
+          /* 2. HACK DEL BOTÓN INVISIBLE (OVERLAY BULLETPROOF) */
+          /* Compatibilidad universal: Streamlit < 1.30 (column) y >= 1.30 (stColumn) */
+          div[data-testid="column"]:has(.card-wrapper-{nombre_especie.lower()}) div[data-testid="stVerticalBlock"],
+          div[data-testid="stColumn"]:has(.card-wrapper-{nombre_especie.lower()}) div[data-testid="stVerticalBlock"] {{
+              position: relative !important;
+          }}
+
+          div[data-testid="column"]:has(.card-wrapper-{nombre_especie.lower()}) div[data-testid="stVerticalBlock"] > div,
+          div[data-testid="stColumn"]:has(.card-wrapper-{nombre_especie.lower()}) div[data-testid="stVerticalBlock"] > div {{
+              position: static !important;
+              transform: none !important;
+          }}
+
+          /* Convertimos el botón de esta columna en un cristal transparente que cubre toda la tarjeta */
+          div[data-testid="column"]:has(.card-wrapper-{nombre_especie.lower()}) div.stButton > button,
+          div[data-testid="stColumn"]:has(.card-wrapper-{nombre_especie.lower()}) div.stButton > button {{
+              position: absolute !important;
+              top: 0 !important; 
+              left: 0 !important;
+              width: 100% !important; 
+              height: 100% !important;
+              opacity: 0 !important; /* TOTALMENTE INVISIBLE, LISTO PARA CLICS */
+              z-index: 999 !important;
+              cursor: pointer !important;
+              background: transparent !important;
+              border: none !important;
+          }}
+
+          div[data-testid="column"]:has(.card-wrapper-{nombre_especie.lower()}) div.stButton > button p,
+          div[data-testid="stColumn"]:has(.card-wrapper-{nombre_especie.lower()}) div.stButton > button p {{
+              display: none !important;
+          }}
+
+          /* 3. TRANSFERENCIA DE HOVER */
+          div[data-testid="column"]:has(div.stButton > button:hover) .card-wrapper-{nombre_especie.lower()},
+          div[data-testid="stColumn"]:has(div.stButton > button:hover) .card-wrapper-{nombre_especie.lower()} {{
+              transform: translateY(-8px);
+              box-shadow: 0 15px 25px rgba({c_rgb}, 0.4);
+              border-left-color: #FFFFFF;
+          }}
+
+          div[data-testid="column"]:has(div.stButton > button:hover) .img-container-{nombre_especie.lower()} img,
+          div[data-testid="stColumn"]:has(div.stButton > button:hover) .img-container-{nombre_especie.lower()} img {{
+              transform: scale(1.03);
+          }}
+
+          /* 4. Imagen de Portada con Zoom Sutil en Hover */
+          .img-container-{nombre_especie.lower()} {{
+              overflow: hidden;
+              border-radius: 8px;
+              margin-bottom: 20px;
+          }}
+          .img-container-{nombre_especie.lower()} img {{
+              width: 100%;
+              height: 230px;
+              object-fit: cover;
+              border-radius: 8px;
+              display: block;
+              transition: transform 0.4s ease;
+          }}
+
+          /* 5. Tipografía y Estructura (Grid y Badges) */
+          .card-title-{nombre_especie.lower()} {{
+              font-size: 1.6rem;
+              font-weight: 900;
+              text-align: center;
+              color: {c_hex};
+              letter-spacing: 1px;
+              margin-top: 0;
+              margin-bottom: 15px;
+              text-transform: uppercase;
+          }}
+          .tech-grid {{
+              display: grid;
+              grid-template-columns: 1fr;
+              gap: 12px;
+          }}
+          .tech-badge {{
+              display: flex;
+              flex-direction: column;
+              background-color: rgba(255, 255, 255, 0.03);
+              border: 1px solid rgba({c_rgb}, 0.15);
+              padding: 12px;
+              border-radius: 8px;
+          }}
+          .tech-label {{
+              font-size: 0.75rem;
+              color: #8B949E;
+              text-transform: uppercase;
+              font-weight: 700;
+              letter-spacing: 1px;
+              margin-bottom: 4px;
+          }}
+          .tech-value {{
+              font-size: 1.15rem;
+              color: #FFFFFF;
+              font-weight: 900;
+              line-height: 1.2;
+          }}
+          .tech-value.highlight {{
+              color: {c_hex};
+          }}
+      </style>
+      <div class="card-wrapper-{nombre_especie.lower()}">
+          <h2 class="card-title-{nombre_especie.lower()}">{nombre_especie}</h2>
+          <div class="img-container-{nombre_especie.lower()}">
+              <img src="{img_url}" alt="{nombre_especie}">
+          </div>
+          <div class="tech-grid">
+              <div class="tech-badge">
+                  <span class="tech-label">Duración</span>
+                  <span class="tech-value">{duracion}</span>
+              </div>
+              <div class="tech-badge">
+                  <span class="tech-label">Ovulación</span>
+                  <span class="tech-value">{ovulacion}</span>
+              </div>
+              <div class="tech-badge">
+                  <span class="tech-label">R. Materno</span>
+                  <span class="tech-value highlight">{r_materno}</span>
+              </div>
+          </div>
+      </div>
+      """
+      return html_card
+
+  temas_dic = {
+      "Bovino":  {"hex": "#00B4D8", "rgb": "0, 180, 216"},
+      "Porcino": {"hex": "#F4A261", "rgb": "244, 162, 97"},
+      "Ovino":   {"hex": "#E9C46A", "rgb": "233, 196, 106"},
+      "Caprino": {"hex": "#558B2F", "rgb": "85, 139, 47"},
+      "Equino":  {"hex": "#7B2CBF", "rgb": "123, 44, 191"},
+      "Ave":     {"hex": "#D32F2F", "rgb": "211, 47, 47"}
+  }
+
   # Primera fila: Bovino, Porcino, Ovino
   col1, col2, col3 = st.columns(3)
   species_list_row1 = ["Bovino", "Porcino", "Ovino"]
 
   for col, sp in zip([col1, col2, col3], species_list_row1):
     with col:
-      st.markdown(f"<h3 style='color: #4CAF50; text-align: center; margin-top: 0;'>{sp}</h3>", unsafe_allow_html=True)
       img_path = f"{sp.lower()}.jpg"
       if os.path.exists(img_path):
         b64_img = get_base64_of_bin_file(img_path)
         img_str = f"data:image/jpeg;base64,{b64_img}"
       else:
         img_str = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-      clicked = clickable_images(
-        [img_str], titles=[sp],
-        div_style={"display": "flex", "justify-content": "center", "width": "100%", "margin": "0"},
-        img_style={"cursor": "pointer", "width": "100%", "border-radius": "12px",
-                   "object-fit": "cover", "aspect-ratio": "16/9",
-                   "transition": "transform 0.3s ease, box-shadow 0.3s ease",
-                   "box-shadow": "0 4px 15px rgba(0, 0, 0, 0.4)"},
-        key=f"img_{sp}"
-      )
-      if not os.path.exists(img_path):
-        st.markdown(f"<div style='background:rgba(0,0,0,0.3);backdrop-filter:blur(5px);height:150px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#8b949e;margin-top:-150px;position:relative;pointer-events:none;border:1px dashed rgba(255,255,255,0.2);'><i>Sin Imagen ({sp})</i></div>", unsafe_allow_html=True)
+        
       data = SPECIES_DATA[sp]
-      st.markdown(f"""
-      <div style='font-size: 14px; color: #F5F5F5; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);'>
-        <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'>️ Duración:</span> {data['cycle_duration']} {data.get('cycle_unit', 'días')}</p>
-        <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'> Ovulación:</span> {data['ovulation_timing']}</p>
-        <p style='margin: 0;'><span style='color:#4CAF50;'> R. Materno:</span> {data['maternal_recognition'] if data['maternal_recognition'] not in ['?', 'N/A'] else 'N/A'}</p>
-      </div>
-      """, unsafe_allow_html=True)
-      if clicked > -1:
+      c_hex = temas_dic[sp]["hex"]
+      c_rgb = temas_dic[sp]["rgb"]
+      
+      html_card = generar_tarjeta_animada(
+          sp, img_str,
+          f"{data['cycle_duration']} {data.get('cycle_unit', 'días')}",
+          data['ovulation_timing'],
+          data['maternal_recognition'] if data['maternal_recognition'] not in ['?', 'N/A'] else 'N/A',
+          c_hex, c_rgb
+      )
+      st.markdown(html_card, unsafe_allow_html=True)
+      
+      # Botón nativo renderizado debajo de la tarjeta para capturar el click hacia el simulador
+      if st.button(f"SELECCIONAR {sp.upper()}", use_container_width=True, key=f"btn_sel_{sp}"):
         st.session_state.especie_seleccionada = sp
         st.session_state.etapa_actual = "simulador"
         st.rerun()
@@ -1786,33 +2384,27 @@ elif st.session_state.etapa_actual == "seleccion":
 
   for col, sp in zip([col4, col5, col6], species_list_row2):
     with col:
-      st.markdown(f"<h3 style='color: #4CAF50; text-align: center; margin-top: 0;'>{sp}</h3>", unsafe_allow_html=True)
       img_path = f"{sp.lower()}.jpg"
       if os.path.exists(img_path):
         b64_img = get_base64_of_bin_file(img_path)
         img_str = f"data:image/jpeg;base64,{b64_img}"
       else:
         img_str = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-      clicked = clickable_images(
-        [img_str], titles=[sp],
-        div_style={"display": "flex", "justify-content": "center", "width": "100%", "margin": "0"},
-        img_style={"cursor": "pointer", "width": "100%", "border-radius": "12px",
-                   "object-fit": "cover", "aspect-ratio": "16/9",
-                   "transition": "transform 0.3s ease, box-shadow 0.3s ease",
-                   "box-shadow": "0 4px 15px rgba(0, 0, 0, 0.4)"},
-        key=f"img_{sp}"
-      )
-      if not os.path.exists(img_path):
-        st.markdown(f"<div style='background:rgba(0,0,0,0.3);backdrop-filter:blur(5px);height:150px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#8b949e;margin-top:-150px;position:relative;pointer-events:none;border:1px dashed rgba(255,255,255,0.2);'><i>Sin Imagen ({sp})</i></div>", unsafe_allow_html=True)
+        
       data = SPECIES_DATA[sp]
-      st.markdown(f"""
-      <div style='font-size: 14px; color: #F5F5F5; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);'>
-        <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'>️ Duración:</span> {data['cycle_duration']} {data.get('cycle_unit', 'días')}</p>
-        <p style='margin: 0 0 8px 0;'><span style='color:#4CAF50;'> Ovulación:</span> {data['ovulation_timing']}</p>
-        <p style='margin: 0;'><span style='color:#4CAF50;'> R. Materno:</span> {data['maternal_recognition'] if data['maternal_recognition'] not in ['?', 'N/A'] else 'N/A'}</p>
-      </div>
-      """, unsafe_allow_html=True)
-      if clicked > -1:
+      c_hex = temas_dic[sp]["hex"]
+      c_rgb = temas_dic[sp]["rgb"]
+      
+      html_card = generar_tarjeta_animada(
+          sp, img_str,
+          f"{data['cycle_duration']} {data.get('cycle_unit', 'días')}",
+          data['ovulation_timing'],
+          data['maternal_recognition'] if data['maternal_recognition'] not in ['?', 'N/A'] else 'N/A',
+          c_hex, c_rgb
+      )
+      st.markdown(html_card, unsafe_allow_html=True)
+      
+      if st.button(f"SELECCIONAR {sp.upper()}", use_container_width=True, key=f"btn_sel_{sp}"):
         st.session_state.especie_seleccionada = sp
         st.session_state.etapa_actual = "simulador"
         st.rerun()
@@ -1941,8 +2533,10 @@ elif st.session_state.etapa_actual == "evaluacion":
             st.success("Acceso concedido. Cargando evaluacion...")
             st.rerun()
           else:
+
             st.error("Contrasena incorrecta. Intentalo de nuevo.")
     else:
       # Los reruns internos del examen (avance de pregunta, calificacion) no
       # repiden la clave porque examen_desbloqueado persiste en session_state.
       renderizar_evaluacion()
+
