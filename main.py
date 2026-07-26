@@ -2036,14 +2036,14 @@ def renderizar_simulador():
     paper_bgcolor:'rgba(0,0,0,0)',
     plot_bgcolor:'rgba(0,0,0,0)',
     font:{{ color:'#ccc', family:'Inter,sans-serif' }},
-    margin:{{ l:60, r:20, t:90, b:50 }},
+    margin:{{ l:50, r:15, t:40, b:90 }},
     height:450,
     xaxis:{{ title:D.xAxisLbl, range:[0,maxDays], color:'#aaa',
              gridcolor:'rgba(255,255,255,0.05)', zeroline:false, fixedrange:true, automargin:true }},
     yaxis:{{ title:'Concentración (%)', range:[0,105], color:'#aaa',
              gridcolor:'rgba(255,255,255,0.05)', zeroline:false, fixedrange:true, automargin:true }},
-    legend:{{ orientation:'h', yanchor:'bottom', y:1.02, xanchor:'center', x:0.5,
-              font:{{size:10}} }},
+    legend:{{ orientation:'h', yanchor:'top', y:-0.18, xanchor:'center', x:0.5,
+              font:{{size:11}}, itemwidth:30 }},
     shapes:[{{
       type:'line', x0:0, x1:0, y0:0, y1:105,
       line:{{color:'white',width:2,dash:'dot'}}
