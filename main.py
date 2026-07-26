@@ -1,4 +1,5 @@
 import streamlit as st
+st.set_page_config(page_title="Ciclo Estral", layout="wide")
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -938,6 +939,7 @@ TIMELINE_DATA = {
   }
 }
 
+@st.cache_data
 def generate_hormone_data(species, complication="Normal", pregnancy=False):
   data = SPECIES_DATA[species]
   days = data["cycle_duration"]
@@ -1836,144 +1838,64 @@ def renderizar_simulador():
     </script>
     """, height=0, scrolling=False)
 
-    # ── Layout estático 2D Optimizado (Anti-Parpadeo) ──────────
-    if "base_fig" not in st.session_state or st.session_state.get('prev_species') != species:
-        import plotly.graph_objects as go
-        import numpy as np
-        fig = go.Figure()
-        
-        # Inicializamos con el array COMPLETO de x, pero y en NaN para evitar mutar el tamaño
-        x_full = df["Día"].values
-        y_empty = np.full_like(x_full, np.nan, dtype=float)
-        
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='FSH', line=dict(color='#BC8BFF', width=3.5)))
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='LH', line=dict(color='#FF3366', width=3.5)))
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='Estradiol (E2)', line=dict(color='#58A6FF', width=3.5)))
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='Progesterona (P4)', line=dict(color='#00CC99', width=3.5)))
-        
-        matKey_init = "Señal Materna" if pregnancy else "PGF2α"
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name=matKey_init, line=dict(color='#FF9933', width=3.5)))
-
-        dayLabel   = 'HORA' if species == 'Ave' else 'DÍA'
-        xAxisTitle = 'Horas del Ciclo Ovulatorio' if species == 'Ave' else 'Días del Ciclo'
-
-        fig.update_layout(
-            template='plotly_dark', plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', dragmode=False,
-            margin=dict(l=20, r=20, t=30, b=20),
-            uirevision='constant', # CLAVE: anti-parpadeo
-            xaxis=dict(title=xAxisTitle, range=[0, max_days], gridcolor='rgba(255,255,255,0.05)', fixedrange=True),
-            yaxis=dict(title='Concentración (%)', range=[0, 105], gridcolor='rgba(255,255,255,0.05)', fixedrange=True),
-            legend=dict(orientation='h', yanchor='bottom', y=1.05, xanchor='center', x=0.5), height=400
-        )
-        fig.add_shape(type='line', x0=0, x1=0, y0=0, y1=105, line=dict(color='#FFF', width=3))
-        fig.add_annotation(
-            x=0.02, y=0.98, xref='paper', yref='paper', text="", showarrow=False,
-            xanchor='left', yanchor='top', font=dict(color='#FFF', size=20),
-            bgcolor='rgba(0,0,0,0.8)', bordercolor='#FFF', borderpad=6, borderwidth=1
-        )
-        st.session_state.base_fig = fig
-        st.session_state.prev_species = species
+    # No static plotly layout needed for Altair
 
     col_play, col_slider = st.columns([1.2, 4])
-
-    
-    # ── 1. Callbacks Puros ────────────────────────────────────────────────────
-    def cb_play():
-        if st.session_state.current_time >= max_days:
-            st.session_state.current_time = 0.0
-        st.session_state.is_playing = True
-
-    def cb_pause():
-        st.session_state.is_playing = False
-
-    def cb_slider():
-        st.session_state.current_time = st.session_state.slider_val
-
-
-    # ── Layout estático 2D Optimizado (Anti-Parpadeo) ──────────
-    if "base_fig" not in st.session_state or st.session_state.get('prev_species') != species:
-        import plotly.graph_objects as go
-        import numpy as np
-        fig = go.Figure()
-        
-        # Inicializamos con el array COMPLETO de x, pero y en NaN para evitar mutar el tamaño
-        x_full = df["Día"].values
-        y_empty = np.full_like(x_full, np.nan, dtype=float)
-        
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='FSH', line=dict(color='#BC8BFF', width=3.5)))
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='LH', line=dict(color='#FF3366', width=3.5)))
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='Estradiol (E2)', line=dict(color='#58A6FF', width=3.5)))
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name='Progesterona (P4)', line=dict(color='#00CC99', width=3.5)))
-        
-        matKey_init = "Señal Materna" if pregnancy else "PGF2α"
-        fig.add_trace(go.Scatter(x=x_full, y=y_empty, mode='lines', name=matKey_init, line=dict(color='#FF9933', width=3.5)))
-
-        dayLabel   = 'HORA' if species == 'Ave' else 'DÍA'
-        xAxisTitle = 'Horas del Ciclo Ovulatorio' if species == 'Ave' else 'Días del Ciclo'
-
-        fig.update_layout(
-            template='plotly_dark', plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', dragmode=False,
-            margin=dict(l=20, r=20, t=30, b=20),
-            uirevision='constant', # CLAVE: anti-parpadeo
-            xaxis=dict(title=xAxisTitle, range=[0, max_days], gridcolor='rgba(255,255,255,0.05)', fixedrange=True),
-            yaxis=dict(title='Concentración (%)', range=[0, 105], gridcolor='rgba(255,255,255,0.05)', fixedrange=True),
-            legend=dict(orientation='h', yanchor='bottom', y=1.05, xanchor='center', x=0.5), height=400
-        )
-        fig.add_shape(type='line', x0=0, x1=0, y0=0, y1=105, line=dict(color='#FFF', width=3))
-        fig.add_annotation(
-            x=0.02, y=0.98, xref='paper', yref='paper', text="", showarrow=False,
-            xanchor='left', yanchor='top', font=dict(color='#FFF', size=20),
-            bgcolor='rgba(0,0,0,0.8)', bordercolor='#FFF', borderpad=6, borderwidth=1
-        )
-        st.session_state.base_fig = fig
-        st.session_state.prev_species = species
-
-    col_play, col_slider = st.columns([1.2, 4])
-    
     with col_play:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.session_state.get('is_playing', False):
-            st.button("⏸️ Pausar", use_container_width=True, on_click=cb_pause, key="btn_pause")
+            if st.button("⏸️ Pausar", use_container_width=True):
+                st.session_state.is_playing = False
+                st.rerun()
         else:
-            st.button("▶️ Reproducir", use_container_width=True, on_click=cb_play, key="btn_play")
+            if st.button("▶️ Reproducir", use_container_width=True):
+                st.session_state.is_playing = True
+                st.rerun()
 
     with col_slider:
         slider_label = f"Desliza para avanzar {'la Hora' if species == 'Ave' else 'el Día'} del Ciclo manualmente:"
-        st.slider(
+        
+        # Omitting the key prevents the UI state from forcing a reset when pausing
+        new_time = st.slider(
             slider_label, 
             min_value=0.0, 
             max_value=float(max_days), 
-            value=float(st.session_state.current_time), 
-            step=0.1,
-            key="slider_val",
-            on_change=cb_slider
+            value=float(st.session_state.get('current_time', 0.0)), 
+            step=0.1
         )
+        
+        if not st.session_state.get('is_playing', False):
+            st.session_state.current_time = new_time
 
-    # ── 2. Aislamiento de Renderizado (Streamlit Fragments) ───────────────────
-    # Evita el UI Reflow (DOM Jumping) al actualizar solo este bloque de la app.
-    
-    # Ajustado a 15 FPS (0.066s) para máxima estabilidad en PCs de gama baja
     _interval = 0.066 if st.session_state.get('is_playing', False) else None
-    
+
+
+
     @st.fragment(run_every=_interval)
     def renderizar_tiempo_real():
-        t = st.session_state.current_time
+        import time
+        import copy
+        import numpy as np
         
-        # ─ Motor de Tiempo Interno ─
+        t = st.session_state.get('current_time', 0.0)
+        
         if st.session_state.get('is_playing', False):
-            paso = max_days / 300.0  # 20 segundos totales a 15 FPS (300 frames)
+            paso = max_days / 300.0
             t = min(t + paso, max_days)
-            st.session_state.current_time = t
+            
             if t >= max_days:
                 st.session_state.is_playing = False
-                st.rerun(scope="fragment")
+                st.session_state.current_time = float(max_days)
+                st.rerun(scope="app")
+            else:
+                st.session_state.current_time = t
 
         idx = (df["Día"] - t).abs().idxmin()
         row = df.iloc[idx]
-        
+
         c_phase = get_current_phase(row["Día"], data["phases"])
         diag_txt, diag_typ = get_hud_diagnosis(row["Día"], c_phase["name"], complication, pregnancy, species)
-        
+
         if diag_typ == "success": st.success(diag_txt)
         elif diag_typ == "error": st.error(diag_txt)
         elif diag_typ == "warning": st.warning(diag_txt)
@@ -1998,27 +1920,44 @@ def renderizar_simulador():
         '''
         st.markdown(kpi_html, unsafe_allow_html=True)
 
-        # ── Actualización del Gráfico 2D Plotly Optimizada (Anti-Parpadeo) ───────────
-        import numpy as np
-        import copy
-        
-        _fig = copy.deepcopy(st.session_state.base_fig)
+        import altair as alt
         
         mask = df["Día"].values <= t
-        _fig.data[0].y = np.where(mask, df["FSH"].values, np.nan)
-        _fig.data[1].y = np.where(mask, df["LH"].values, np.nan)
-        _fig.data[2].y = np.where(mask, df["Estradiol (E2)"].values, np.nan)
-        _fig.data[3].y = np.where(mask, df["Progesterona (P4)"].values, np.nan)
-        _fig.data[4].y = np.where(mask, df[matKey].values, np.nan)
+        df_plot = df[mask]
         
-        _fig.layout.shapes[0].x0 = t
-        _fig.layout.shapes[0].x1 = t
+        # Preparar dataframe para Altair
+        df_melt = df_plot.melt(id_vars=["Día"], value_vars=["FSH", "LH", "Estradiol (E2)", "Progesterona (P4)", matKey], var_name="Hormona", value_name="Concentración (%)")
         
-        dayLabel   = 'HORA' if species == 'Ave' else 'DÍA'
-        _fig.layout.annotations[0].text = f"{dayLabel} {t:.1f}"
-
-        # Renderizar en contenedor estable
-        st.plotly_chart(_fig, use_container_width=True, config={'staticPlot': True, 'displayModeBar': False})
+        color_scale = alt.Scale(
+            domain=["FSH", "LH", "Estradiol (E2)", "Progesterona (P4)", matKey],
+            range=['#BC8BFF', '#FF3366', '#58A6FF', '#00CC99', '#FF9933']
+        )
+        
+        dayLabel = 'HORA' if species == 'Ave' else 'DÍA'
+        xAxisTitle = 'Horas del Ciclo Ovulatorio' if species == 'Ave' else 'Días del Ciclo'
+        
+        # Gráfico Base
+        base = alt.Chart(df_melt).encode(
+            x=alt.X('Día:Q', scale=alt.Scale(domain=[0, max_days]), title=xAxisTitle, axis=alt.Axis(gridColor='rgba(255,255,255,0.05)', grid=True, titleFontSize=14, labelFontSize=12)),
+            y=alt.Y('Concentración (%):Q', scale=alt.Scale(domain=[0, 105]), axis=alt.Axis(gridColor='rgba(255,255,255,0.05)', grid=True, titleFontSize=14, labelFontSize=12)),
+            color=alt.Color('Hormona:N', scale=color_scale, legend=alt.Legend(orient='bottom', title=None, labelFontSize=13, symbolType='circle'))
+        )
+        
+        # Líneas de las curvas
+        lines = base.mark_line(strokeWidth=3.5)
+        
+        # Línea de tiempo (cursor vertical)
+        vline = alt.Chart(pd.DataFrame({'Día': [t]})).mark_rule(color='#FFF', strokeWidth=3).encode(x='Día:Q')
+        
+        # Etiqueta de texto de la línea de tiempo
+        text = alt.Chart(pd.DataFrame({'x': [max_days*0.02], 'y': [100], 'text': [f"{dayLabel} {t:.1f}"]})).mark_text(
+            align='left', baseline='top', color='#FFF', fontSize=20, fontStyle='bold', dy=-15
+        ).encode(x='x:Q', y='y:Q', text='text:N')
+        
+        # Ensamblar gráfico
+        final_chart = (lines + vline + text).properties(height=400, background='transparent').configure_view(strokeWidth=0)
+        
+        st.altair_chart(final_chart, use_container_width=True)
 
     # Iniciar Fragmento
     renderizar_tiempo_real()
