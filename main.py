@@ -1803,164 +1803,390 @@ def renderizar_simulador():
     df = generate_hormone_data(species, complication, pregnancy)
     max_days = data['cycle_duration']
   
-    # 2. Control Slider en Streamlit
+    # 2. Simulador Endocrino – Motor 100% JavaScript / Plotly.js (60 FPS cliente)
     st.markdown("---")
     st.markdown("""
     <div class='glass-card glass-cyan' style='margin-bottom:10px; padding: 15px 20px;'>
-      <h3 style='margin:0; color:#4CAF50;'>️ Simulador Endocrino en Tiempo Real</h3>
+      <h3 style='margin:0; color:#4CAF50;'>⚗️ Simulador Endocrino en Tiempo Real</h3>
     </div>
     """, unsafe_allow_html=True)
+  
+    # ── Serializar datos de hormonas a JSON para el motor JS ─────────────────
+    import json as _json
+    import numpy as _np
+
+    mat_key  = "Señal Materna" if pregnancy else "PGF2α"
+    if pregnancy:
+        if species == "Porcino":  mat_label = "🟠 Estrógenos Emb. (%)"
+        elif species == "Equino": mat_label = "🟠 Movilidad Emb. (%)"
+        else:                     mat_label = "🟠 IFN-τ (%)"
+    else:
+        mat_label = "🟠 PGF2α (%)"
+
+    day_label   = "HORA" if species == "Ave" else "DÍA"
+    x_axis_lbl  = "Horas del Ciclo Ovulatorio" if species == "Ave" else "Días del Ciclo"
+
+    payload = _json.dumps({
+        "t":         df["Día"].tolist(),
+        "fsh":       df["FSH"].tolist(),
+        "lh":        df["LH"].tolist(),
+        "e2":        df["Estradiol (E2)"].tolist(),
+        "p4":        df["Progesterona (P4)"].tolist(),
+        "mat":       df[mat_key].tolist(),
+        "maxDays":   float(max_days),
+        "dayLabel":  day_label,
+        "xAxisLbl":  x_axis_lbl,
+        "matLabel":  mat_label,
+        "species":   species,
+        "complication": complication,
+        "pregnancy": pregnancy,
+        "phases":    [{"name": p["name"], "start": p["range"][0],
+                       "end": p["range"][1], "color": p["color"]}
+                      for p in data["phases"]],
+    }, ensure_ascii=False)
+
+    num_frames = len(df) - 1
+
+    sim_html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ background: transparent; font-family: 'Inter', sans-serif; color: #fff; }}
+
+  #sim-wrapper {{
+    background: rgba(22,27,34,0.97);
+    border-radius: 16px;
+    padding: 18px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }}
+
+  /* ── Fila 1: controles ── */
+  #controls {{
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 14px;
+  }}
+  #btn-play {{
+    flex-shrink: 0;
+    width: 160px;
+    padding: 12px 0;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.25s ease;
+    background: #00E676;
+    color: #121212;
+    box-shadow: 0 4px 18px rgba(0,230,118,0.45);
+  }}
+  #btn-play:hover:not(:disabled) {{ background:#00C853; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,230,118,0.6); }}
+  #btn-play.paused {{ background:#FF3366; color:#fff; box-shadow:0 4px 18px rgba(255,51,102,0.45); }}
+  #btn-play.paused:hover {{ background:#E0003A; box-shadow:0 8px 24px rgba(255,51,102,0.6); }}
+  #btn-play:disabled {{ background: #555; color: #aaa; cursor: not-allowed; box-shadow: none; transform: none; }}
+
+  #slider-wrap {{ flex:1; }}
+  #slider-lbl {{ font-size:0.78rem; color:#8b949e; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px; }}
+  #t-slider {{
+    -webkit-appearance:none; appearance:none;
+    width:100%; height:6px; border-radius:3px; outline:none; cursor:pointer;
+    background: rgba(255,255,255,0.12);
+  }}
+  #t-slider::-webkit-slider-thumb {{
+    -webkit-appearance:none; appearance:none;
+    width:18px; height:18px; border-radius:50%;
+    background:#00E676; border:2px solid #fff;
+    box-shadow:0 0 8px rgba(0,230,118,0.7); cursor:pointer;
+  }}
+  #t-slider:disabled::-webkit-slider-thumb {{ background: #555; border-color: #888; box-shadow: none; cursor: not-allowed; }}
+
+  /* ── Fila 2: alerta diagnóstico ── */
+  #diag-box {{
+    border-radius:10px; padding:12px 16px; margin-bottom:14px;
+    font-size:0.92rem; font-weight:600; line-height:1.5;
+    border-left:5px solid #58A6FF;
+    background:rgba(88,166,255,0.1); color:#E8F0FF;
+    transition: background 0.4s, border-color 0.4s;
+  }}
+  #diag-box.success {{ background:rgba(0,204,100,0.12); border-color:#00CC64; color:#B9F5D8; }}
+  #diag-box.error   {{ background:rgba(255,51,102,0.12); border-color:#FF3366; color:#FFD0DC; }}
+  #diag-box.warning {{ background:rgba(255,193,7,0.12);  border-color:#FFC107; color:#FFF3CD; }}
+
+  /* ── Fila 3: KPIs ── */
+  #kpi-row {{
+    display:flex; flex-wrap:wrap; gap:12px; margin-bottom:14px;
+    background:rgba(22,27,34,0.6); padding:16px; border-radius:14px;
+    border:1px solid rgba(255,255,255,0.06);
+  }}
+  .kpi-card {{
+    flex:1; min-width:90px; text-align:center;
+  }}
+  .kpi-lbl {{ font-size:12px; color:#8b949e; display:block; margin-bottom:6px; }}
+  .kpi-val {{ font-size:26px; font-weight:800; }}
+
+  /* ── Fila 4: gráfica ── */
+  #chart {{ width:100%; height:400px; }}
+</style>
+</head>
+<body>
+<div id="sim-wrapper">
+
+  <!-- Fila 1: Controles -->
+  <div id="controls">
+    <button id="btn-play" disabled>Cargando...</button>
+    <div id="slider-wrap">
+      <div id="slider-lbl">Desliza para avanzar el {day_label} del ciclo manualmente</div>
+      <input id="t-slider" type="range" min="0" max="{num_frames}" value="0" step="1" disabled>
+    </div>
+  </div>
+
+  <!-- Fila 2: Diagnóstico -->
+  <div id="diag-box">Generando motor de animación...</div>
+
+  <!-- Fila 3: KPIs -->
+  <div id="kpi-row">
+    <div class="kpi-card"><span class="kpi-lbl">🟣 FSH (%)</span><span class="kpi-val" id="k-fsh" style="color:#BC8BFF">0.0%</span></div>
+    <div class="kpi-card"><span class="kpi-lbl">🔴 LH (%)</span><span class="kpi-val" id="k-lh"  style="color:#FF3366">0.0%</span></div>
+    <div class="kpi-card"><span class="kpi-lbl">🔵 E2 (%)</span><span class="kpi-val" id="k-e2"  style="color:#58A6FF">0.0%</span></div>
+    <div class="kpi-card"><span class="kpi-lbl">🟢 P4 (%)</span><span class="kpi-val" id="k-p4"  style="color:#00CC99">0.0%</span></div>
+    <div class="kpi-card"><span class="kpi-lbl" id="k-mat-lbl">🟠 PGF2α (%)</span><span class="kpi-val" id="k-mat" style="color:#FF9933">0.0%</span></div>
+  </div>
+
+  <!-- Fila 4: Gráfica -->
+  <div id="chart"></div>
+
+</div>
+
+<script>
+(function() {{
+  const D = {payload};
+  const n = D.t.length;
+  const maxDays = D.maxDays;
+
+  const btn    = document.getElementById('btn-play');
+  const slider = document.getElementById('t-slider');
+  const diagEl = document.getElementById('diag-box');
+  const kLbl   = document.getElementById('k-mat-lbl');
+  kLbl.textContent = D.matLabel;
+
+  /* ── Inicializar Plotly con base vacía ── */
+  const layout = {{
+    paper_bgcolor:'rgba(0,0,0,0)',
+    plot_bgcolor:'rgba(0,0,0,0)',
+    font:{{ color:'#ccc', family:'Inter,sans-serif' }},
+    margin:{{ l:50, r:20, t:40, b:50 }},
+    height:400,
+    xaxis:{{ title:D.xAxisLbl, range:[0,maxDays], color:'#aaa',
+             gridcolor:'rgba(255,255,255,0.05)', zeroline:false, fixedrange:true }},
+    yaxis:{{ title:'Concentración (%)', range:[0,105], color:'#aaa',
+             gridcolor:'rgba(255,255,255,0.05)', zeroline:false, fixedrange:true }},
+    legend:{{ orientation:'h', yanchor:'bottom', y:1.02, xanchor:'center', x:0.5,
+              font:{{size:12}} }},
+    shapes:[{{
+      type:'line', x0:0, x1:0, y0:0, y1:105,
+      line:{{color:'white',width:2,dash:'dot'}}
+    }}],
+    annotations:[{{
+      x:0.02, y:0.97, xref:'paper', yref:'paper',
+      text:D.dayLabel+' 0.0', showarrow:false,
+      xanchor:'left', yanchor:'top',
+      font:{{color:'white',size:17,family:'monospace'}},
+      bgcolor:'rgba(0,0,0,0.55)', borderpad:5
+    }}],
+    dragmode:false,
+  }};
+
+  const config = {{ displayModeBar:false, staticPlot:true, responsive:true }};
+  
+  // Trazos iniciales vacíos
+  const initialTraces = [
+    {{ x: D.t, y: Array(n).fill(null), mode:'lines', name:'FSH',             line:{{color:'#BC8BFF',width:3}} }},
+    {{ x: D.t, y: Array(n).fill(null), mode:'lines', name:'LH',              line:{{color:'#FF3366',width:3}} }},
+    {{ x: D.t, y: Array(n).fill(null), mode:'lines', name:'Estradiol (E2)',   line:{{color:'#58A6FF',width:3}} }},
+    {{ x: D.t, y: Array(n).fill(null), mode:'lines', name:'Progesterona (P4)',line:{{color:'#00CC99',width:3}} }},
+    {{ x: D.t, y: Array(n).fill(null), mode:'lines', name:D.matLabel.replace(/🟠 /,'').replace(' (%)',''), line:{{color:'#FF9933',width:3}} }},
+  ];
+
+  /* ── Estado de animación ── */
+  let curIdx    = 0;
+  let playing   = false;
+  let rafId     = null;
+  let lastTime  = null;
+  const stepsPerSec = n / 22.0;
+
+  /* ── Montaje Seguro de Gráfica ── */
+  Plotly.newPlot('chart', initialTraces, layout, config).then(() => {{
+    btn.disabled = false;
+    btn.textContent = '▶ Reproducir';
+    slider.disabled = false;
+    render(0);
+  }});
+
+  /* ── Helpers de lógica ── */
+  function lerp(arr, i) {{
+    const fi = Math.floor(i), ci = Math.min(fi+1, n-1);
+    const frac = i - fi;
+    return arr[fi] + frac*(arr[ci]-arr[fi]);
+  }}
+
+  function getPhase(t) {{
+    for (const p of D.phases) {{
+      if (t >= p.start && t < p.end) return p;
+    }}
+    return D.phases[D.phases.length-1];
+  }}
+
+  function getDiag(t) {{
+    const phase = getPhase(t);
+    const name  = phase.name;
+    const sp    = D.species;
+    const comp  = D.complication;
+    const preg  = D.pregnancy;
+    const unit  = sp==='Ave' ? 'Hora' : 'Día';
+    const val   = t.toFixed(1);
+
+    if (sp==='Ave') {{
+      if (comp==='Estrés por Calor')
+        return [unit+' '+val+' — Estrés Calor: Supresión GnRH, pico LH caído. Postura reducida 15-30%.','error'];
+      if (comp.startsWith('Fotop'))
+        return [unit+' '+val+' — Fotoperíodo Inadecuado: Melatonina suprime eje HHG. Jerarquía folicular detenida.','error'];
+      if (comp.startsWith('Agot'))
+        return [unit+' '+val+' — Agotamiento Ovárico / Muda: Reposo reproductivo forzado.','error'];
+      if (name==='Post-oviposición') return [unit+' '+val+' — Normal: Oviposición completada. Nuevo ciclo ovulatorio iniciando.','info'];
+      if (name==='Pico LH / Ovulación') return [unit+' '+val+' — Normal: Pico LH activo. Folículo F1 ovulando.','success'];
+      if (name==='Formación del huevo') return [unit+' '+val+' — Normal: Tránsito oviductal en curso. Calcificación activa.','info'];
+      return [unit+' '+val+' — Normal: Oviposición inminente. Contracciones uterinas.','success'];
+    }}
+
+    if (preg) {{
+      if (['Bovino','Ovino','Caprino'].includes(sp))
+        return [unit+' '+val+' — GESTACIÓN ACTIVA: Reconocimiento materno (IFN-τ) exitoso. PGF2α bloqueada, CL mantenido.','success'];
+      if (sp==='Porcino') return [unit+' '+val+' — GESTACIÓN ACTIVA: Estrógenos embrionarios bloquean luteólisis.','success'];
+      if (sp==='Equino')  return [unit+' '+val+' — GESTACIÓN ACTIVA: Movilidad del concepto frena PGF2α. CL mantenido.','success'];
+    }}
+    if (comp==='Balance Energético Negativo (BEN)')
+      return [unit+' '+val+' — BEN: Anestro por déficit energético. Eje HHG apagado.','error'];
+    if (comp==='Cuerpo Lúteo Persistente')
+      return [unit+' '+val+' — CL Persistente: Bloqueo en fase lútea. Falla uterina de PGF2α.','error'];
+    if (comp==='Estrés Calórico') {{
+      if (name==='Estro') return [unit+' '+val+' — Estrés Calórico: Celo Silencioso. Pico E2 deprimido.','warning'];
+      return [unit+' '+val+' — Estrés Calórico: Calidad ovocitaria comprometida.','warning'];
+    }}
+    if (name==='Estro')    return [unit+' '+val+' — Normal (Estro): Máxima receptividad. Verificar ventana IA.','success'];
+    if (name==='Proestro') return [unit+' '+val+' — Normal (Proestro): Crecimiento folicular. E2 en ascenso.','info'];
+    if (name==='Metaestro')return [unit+' '+val+' — Normal (Metaestro): Luteinización en curso. P4 iniciando.','info'];
+    return [unit+' '+val+' — Normal (Diestro): Dominancia P4. Útero preparado para gestación.','info'];
+  }}
+
+  /* ── Motor de Rendering Pre-grabado ── */
+  function render(i) {{
+    i = Math.max(0, Math.min(i, n-1));
+    curIdx = i;
+    const t   = D.t[Math.floor(i)]; // Evitar interpolar el tiempo
+    const fsh = lerp(D.fsh, i);
+    const lh  = lerp(D.lh,  i);
+    const e2  = lerp(D.e2,  i);
+    const p4  = lerp(D.p4,  i);
+    const mat = lerp(D.mat, i);
+
+    // KPIs
+    document.getElementById('k-fsh').textContent = fsh.toFixed(1)+'%';
+    document.getElementById('k-lh').textContent  = lh.toFixed(1)+'%';
+    document.getElementById('k-e2').textContent  = e2.toFixed(1)+'%';
+    document.getElementById('k-p4').textContent  = p4.toFixed(1)+'%';
+    document.getElementById('k-mat').textContent = mat.toFixed(1)+'%';
+
+    // Diagnóstico
+    const [msg, tipo] = getDiag(t);
+    diagEl.textContent = msg;
+    diagEl.className = tipo;
+
+    // Slider
+    slider.value = i;
+    const pct = (i/(n-1)*100).toFixed(1);
+    slider.style.background = `linear-gradient(to right,#00E676 0%,#00E676 ${{pct}}%,rgba(255,255,255,0.12) ${{pct}}%)`;
+
+    // Reconstruir los frames exactos (pre-grabados)
+    const newTraces = [
+      {{ x: D.t, y: D.fsh.map((v,j) => j<=i ? v : null), mode:'lines', name:'FSH', line:{{color:'#BC8BFF',width:3}} }},
+      {{ x: D.t, y: D.lh.map((v,j) => j<=i ? v : null),  mode:'lines', name:'LH', line:{{color:'#FF3366',width:3}} }},
+      {{ x: D.t, y: D.e2.map((v,j) => j<=i ? v : null),  mode:'lines', name:'Estradiol (E2)', line:{{color:'#58A6FF',width:3}} }},
+      {{ x: D.t, y: D.p4.map((v,j) => j<=i ? v : null),  mode:'lines', name:'Progesterona (P4)', line:{{color:'#00CC99',width:3}} }},
+      {{ x: D.t, y: D.mat.map((v,j) => j<=i ? v : null), mode:'lines', name:D.matLabel.replace(/🟠 /,'').replace(' (%)',''), line:{{color:'#FF9933',width:3}} }}
+    ];
+
+    layout.shapes[0].x0 = t;
+    layout.shapes[0].x1 = t;
+    layout.annotations[0].text = D.dayLabel+' '+t.toFixed(1);
+
+    // Reactualización balística en la tarjeta gráfica del navegador
+    Plotly.react('chart', newTraces, layout, config);
+  }}
+
+  /* ── Loop de animación ── */
+  function animLoop(ts) {{
+    if (!playing) return;
+    if (lastTime === null) lastTime = ts;
+    const dt = (ts - lastTime) / 1000.0;
+    lastTime  = ts;
     
-    sim_hash = f"{species}_{complication}_{pregnancy}"
-    if "is_playing" not in st.session_state:
-        st.session_state.is_playing = False
-    if "current_time" not in st.session_state:
-        st.session_state.current_time = 0.0
-    if "sim_hash" not in st.session_state or st.session_state.sim_hash != sim_hash:
-        st.session_state.current_time = 0.0
-        st.session_state.sim_hash = sim_hash
-        st.session_state.is_playing = False
-        st.session_state.base_fig = None
+    const step = stepsPerSec * dt;
+    const next = curIdx + step;
+    
+    if (next >= n-1) {{
+      render(n-1);
+      stopPlay();
+      return;
+    }}
+    render(next);
+    rafId = requestAnimationFrame(animLoop);
+  }}
 
-    # ── JS: Preservar posición de scroll en cada fragment-rerun ──────────────
-    import streamlit.components.v1 as components
-    components.html("""
-    <script>
-    (function() {
-        var KEY = 'st_sim_scroll';
-        var p = window.parent;
-        var saved = sessionStorage.getItem(KEY);
-        if (saved !== null) { p.scrollTo(0, parseInt(saved, 10)); }
-        p.addEventListener('scroll', function() {
-            sessionStorage.setItem(KEY, p.scrollY);
-        }, { passive: true });
-    })();
-    </script>
-    """, height=0, scrolling=False)
+  function startPlay() {{
+    if (curIdx >= n-1) curIdx = 0;
+    playing  = true;
+    lastTime = null;
+    btn.textContent = '⏸ Pausar';
+    btn.classList.add('paused');
+    slider.disabled = true;
+    rafId = requestAnimationFrame(animLoop);
+  }}
 
-    # No static plotly layout needed for Altair
+  function stopPlay() {{
+    playing = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    lastTime = null;
+    btn.textContent = '▶ Reproducir';
+    btn.classList.remove('paused');
+    slider.disabled = false;
+  }}
 
-    col_play, col_slider = st.columns([1.2, 4])
-    with col_play:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.session_state.get('is_playing', False):
-            if st.button("⏸️ Pausar", use_container_width=True):
-                st.session_state.is_playing = False
-                st.rerun()
-        else:
-            if st.button("▶️ Reproducir", use_container_width=True):
-                st.session_state.is_playing = True
-                st.rerun()
+  btn.addEventListener('click', () => {{
+    if (playing) stopPlay(); else startPlay();
+  }});
 
-    with col_slider:
-        slider_label = f"Desliza para avanzar {'la Hora' if species == 'Ave' else 'el Día'} del Ciclo manualmente:"
-        
-        # Omitting the key prevents the UI state from forcing a reset when pausing
-        new_time = st.slider(
-            slider_label, 
-            min_value=0.0, 
-            max_value=float(max_days), 
-            value=float(st.session_state.get('current_time', 0.0)), 
-            step=0.1
-        )
-        
-        if not st.session_state.get('is_playing', False):
-            st.session_state.current_time = new_time
+  slider.addEventListener('input', () => {{
+    if (playing) stopPlay();
+    render(parseInt(slider.value));
+  }});
 
-    _interval = 0.066 if st.session_state.get('is_playing', False) else None
+}})();
+</script>
+</body>
+</html>
+"""
 
+    import streamlit.components.v1 as _components
+    _components.html(sim_html, height=660, scrolling=False)
 
-
-    @st.fragment(run_every=_interval)
-    def renderizar_tiempo_real():
-        import time
-        import copy
-        import numpy as np
-        
-        t = st.session_state.get('current_time', 0.0)
-        
-        if st.session_state.get('is_playing', False):
-            paso = max_days / 300.0
-            t = min(t + paso, max_days)
-            
-            if t >= max_days:
-                st.session_state.is_playing = False
-                st.session_state.current_time = float(max_days)
-                st.rerun(scope="app")
-            else:
-                st.session_state.current_time = t
-
-        idx = (df["Día"] - t).abs().idxmin()
-        row = df.iloc[idx]
-
-        c_phase = get_current_phase(row["Día"], data["phases"])
-        diag_txt, diag_typ = get_hud_diagnosis(row["Día"], c_phase["name"], complication, pregnancy, species)
-
-        if diag_typ == "success": st.success(diag_txt)
-        elif diag_typ == "error": st.error(diag_txt)
-        elif diag_typ == "warning": st.warning(diag_txt)
-        else: st.info(diag_txt)
-            
-        matLabel = "🟠 PGF2α (%)"
-        matKey   = "PGF2α"
-        if pregnancy:
-            if species == "Porcino":  matLabel = " Estrógenos Emb. (%)"
-            elif species == "Equino": matLabel = " Movilidad Emb. (%)"
-            else:                     matLabel = " IFN-τ (%)"
-            matKey = "Señal Materna"
-            
-        kpi_html = f'''
-        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: rgba(22, 27, 34, 0.6); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
-            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">🟣 FSH (%)</span><span style="font-size: 28px; font-weight: 800; color: #BC8BFF;">{row['FSH']:.1f}%</span></div>
-            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;"> LH (%)</span><span style="font-size: 28px; font-weight: 800; color: #FF3366;">{row['LH']:.1f}%</span></div>
-            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;"> E2 (%)</span><span style="font-size: 28px; font-weight: 800; color: #58A6FF;">{row['Estradiol (E2)']:.1f}%</span></div>
-            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">🟢 P4 (%)</span><span style="font-size: 28px; font-weight: 800; color: #00CC99;">{row['Progesterona (P4)']:.1f}%</span></div>
-            <div style="flex: 1; text-align: center; min-width: 100px;"><span style="font-size: 14px; color: #8b949e; display: block; margin-bottom: 8px;">{matLabel}</span><span style="font-size: 28px; font-weight: 800; color: #FF9933;">{row[matKey]:.1f}%</span></div>
-        </div>
-        '''
-        st.markdown(kpi_html, unsafe_allow_html=True)
-
-        import altair as alt
-        
-        mask = df["Día"].values <= t
-        df_plot = df[mask]
-        
-        # Preparar dataframe para Altair
-        df_melt = df_plot.melt(id_vars=["Día"], value_vars=["FSH", "LH", "Estradiol (E2)", "Progesterona (P4)", matKey], var_name="Hormona", value_name="Concentración (%)")
-        
-        color_scale = alt.Scale(
-            domain=["FSH", "LH", "Estradiol (E2)", "Progesterona (P4)", matKey],
-            range=['#BC8BFF', '#FF3366', '#58A6FF', '#00CC99', '#FF9933']
-        )
-        
-        dayLabel = 'HORA' if species == 'Ave' else 'DÍA'
-        xAxisTitle = 'Horas del Ciclo Ovulatorio' if species == 'Ave' else 'Días del Ciclo'
-        
-        # Gráfico Base
-        base = alt.Chart(df_melt).encode(
-            x=alt.X('Día:Q', scale=alt.Scale(domain=[0, max_days]), title=xAxisTitle, axis=alt.Axis(gridColor='rgba(255,255,255,0.05)', grid=True, titleFontSize=14, labelFontSize=12)),
-            y=alt.Y('Concentración (%):Q', scale=alt.Scale(domain=[0, 105]), axis=alt.Axis(gridColor='rgba(255,255,255,0.05)', grid=True, titleFontSize=14, labelFontSize=12)),
-            color=alt.Color('Hormona:N', scale=color_scale, legend=alt.Legend(orient='bottom', title=None, labelFontSize=13, symbolType='circle'))
-        )
-        
-        # Líneas de las curvas
-        lines = base.mark_line(strokeWidth=3.5)
-        
-        # Línea de tiempo (cursor vertical)
-        vline = alt.Chart(pd.DataFrame({'Día': [t]})).mark_rule(color='#FFF', strokeWidth=3).encode(x='Día:Q')
-        
-        # Etiqueta de texto de la línea de tiempo
-        text = alt.Chart(pd.DataFrame({'x': [max_days*0.02], 'y': [100], 'text': [f"{dayLabel} {t:.1f}"]})).mark_text(
-            align='left', baseline='top', color='#FFF', fontSize=20, fontStyle='bold', dy=-15
-        ).encode(x='x:Q', y='y:Q', text='text:N')
-        
-        # Ensamblar gráfico
-        final_chart = (lines + vline + text).properties(height=400, background='transparent').configure_view(strokeWidth=0)
-        
-        st.altair_chart(final_chart, use_container_width=True)
-
-    # Iniciar Fragmento
-    renderizar_tiempo_real()
 
 if st.session_state.etapa_actual == "portada":
   st.markdown("<br><br><br><br>", unsafe_allow_html=True)
