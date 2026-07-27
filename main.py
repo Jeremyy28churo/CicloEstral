@@ -2856,70 +2856,55 @@ elif st.session_state.etapa_actual == "evaluacion":
   # Cabecera del módulo
   fase_actual = st.session_state.get("eval_fase", "")
   
-  if fase_actual == "activo":
-      color_latido = "#EF5350"
-      velocidad_corazon = "0.35s"
-      borde_color = "#EF5350"
-      border_rgba = "rgba(239,83,80,0.5)"
-      caja_sombra = "0 0 25px rgba(239,83,80,0.4)"
-      texto_color = "#FFCDD2"
-      texto_sombra = "rgba(239,83,80,0.8)"
-      path_points = ["M 0 60"]
-      x = 0
-      for _ in range(7):
-          path_points.append(f"L {x+15} 60 Q {x+25} 50 {x+35} 60 L {x+40} 60 L {x+45} 75 L {x+55} -10 L {x+65} 130 L {x+70} 60 L {x+80} 60 Q {x+90} 45 {x+105} 60")
-          x += 125
-      path_points.append("L 1000 60")
-      path_d_active = " ".join(path_points)
-
-      svg_bg = f"""
-  <svg width='100%' height='100%' viewBox="0 0 1000 120" preserveAspectRatio="none" style='position:absolute; top:0; left:0; z-index:0; opacity: 0.35;'>
-    <path d='{path_d_active}' fill='none' stroke='{color_latido}' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' 
-          style='stroke-dasharray: 3500; stroke-dashoffset: 3500; animation: drawSweepActive 1.2s infinite;'/>
-  </svg>"""
-  else:
-      color_latido = "#EF5350"
-      velocidad_corazon = "1.25s"
-      borde_color = "#EF5350"
-      border_rgba = "rgba(239,83,80,0.3)"
-      caja_sombra = "0 0 15px rgba(239,83,80,0.15)"
-      texto_color = "#FFCDD2"
-      texto_sombra = "rgba(239,83,80,0.5)"
-      path_d = "M 0 60 L 300 60 Q 310 50 320 60 L 325 60 L 330 70 L 340 25 L 350 85 L 355 60 L 375 60 Q 385 45 400 60 L 440 60 Q 450 50 460 60 L 465 60 L 470 70 L 480 25 L 490 85 L 495 60 L 515 60 Q 525 45 540 60 L 800 60"
-      svg_bg = f"""
-  <svg width='100%' height='100%' viewBox="0 0 800 120" preserveAspectRatio="none" style='position:absolute; top:0; left:0; z-index:0; opacity: 0.3;'>
-    <path d='{path_d}' fill='none' stroke='{color_latido}' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' 
-          style='stroke-dasharray: 1200; stroke-dashoffset: 1200; animation: drawSweep 3s infinite;'/>
-  </svg>"""
-
   render_header = st.session_state.get("eval_estudiante", {}).get("rol", "") != "admin"
   if render_header:
-      st.markdown(
-        f"<style>"
-        f":root {{ --color-hex: #EF5350 !important; --color-rgb: 239, 83, 80 !important; }}"
-        f"@keyframes heartbeat {{ 0% {{ transform: scale(1); }} 15% {{ transform: scale(1.15); }} 30% {{ transform: scale(1); }} 45% {{ transform: scale(1.15); }} 70% {{ transform: scale(1); }} 100% {{ transform: scale(1); }} }}"
-        f"@keyframes drawSweep {{ 0% {{ stroke-dashoffset: 1200; opacity: 1; }} 60% {{ stroke-dashoffset: 0; opacity: 1; }} 80% {{ stroke-dashoffset: 0; opacity: 0; }} 81% {{ stroke-dashoffset: 1200; opacity: 0; }} 100% {{ stroke-dashoffset: 1200; opacity: 0; }} }}"
-        f"@keyframes drawSweepActive {{ 0% {{ stroke-dashoffset: 3500; opacity: 1; }} 75% {{ stroke-dashoffset: 0; opacity: 1; }} 90% {{ stroke-dashoffset: 0; opacity: 0; }} 95% {{ stroke-dashoffset: 3500; opacity: 0; }} 100% {{ stroke-dashoffset: 3500; opacity: 1; }} }}"
-        f"</style>"
-        f"<div style='background:linear-gradient(135deg,rgba(18,18,18,0.9),rgba(8,8,8,0.95));"
-        f"padding:28px 36px;border-radius:14px;border-top:4px solid {borde_color};"
-        f"border:1px solid {border_rgba}; box-shadow: {caja_sombra}; margin-bottom:28px; position:relative; overflow:hidden;'>"
-        f"  {svg_bg}"
-        f"  <svg width='80' height='80' viewBox='0 0 100 100' style='position:absolute; top:50%; right:20px; transform:translateY(-50%); z-index:5; filter: drop-shadow(0px 0px 15px {color_latido}); animation: heartbeat {velocidad_corazon} infinite;'>"
-        f"    <g fill='{color_latido}' stroke='{color_latido}' stroke-width='2' stroke-linejoin='round'>"
-        f"      <path d='M45,28 C45,10 55,5 65,15 C68,18 68,22 62,26' fill='none' stroke-width='8'/>"
-        f"      <path d='M35,32 C35,15 40,10 45,10' fill='none' stroke-width='6'/>"
-        f"      <path d='M58,35 C70,25 80,25 82,32' fill='none' stroke-width='7'/>"
-        f"      <path d='M38,30 C15,25 10,55 35,78 C45,88 52,92 55,90 C70,75 88,50 72,32 C65,22 55,22 48,28 C45,25 42,25 38,30 Z' />"
-        f"    </g>"
-        f"  </svg>"
-        f"  <div style='position:relative; z-index:10; pointer-events:none;'>"
-        f"    <h2 style='margin:0 0 6px 0;color:{texto_color};font-weight:900;letter-spacing:1.5px; text-shadow: 0 0 12px {texto_sombra};'>MODULO DE EVALUACION</h2>"
-        f"    <p style='margin:0;color:#E2E8F0;font-size:0.95rem; font-weight: 500;'>Ciclo Estral Comparado - Fisiologia Animal Aplicada</p>"
-        f"  </div>"
-        f"</div>",
-        unsafe_allow_html=True
-      )
+      if fase_actual == "activo":
+          # Diseño de Electrocardiograma para EVALUACION REAL (vida o muerte)
+          color_latido = "#EF5350"
+          velocidad_corazon = "0.35s"
+          path_points = ["M 0 60"]
+          x = 0
+          for _ in range(7):
+              path_points.append(f"L {x+15} 60 Q {x+25} 50 {x+35} 60 L {x+40} 60 L {x+45} 75 L {x+55} -10 L {x+65} 130 L {x+70} 60 L {x+80} 60 Q {x+90} 45 {x+105} 60")
+              x += 125
+          path_points.append("L 1000 60")
+          path_d_active = " ".join(path_points)
+          
+          st.markdown(
+            f"<style>"
+            f"@keyframes heartbeat {{ 0% {{ transform: scale(1); }} 15% {{ transform: scale(1.15); }} 30% {{ transform: scale(1); }} 45% {{ transform: scale(1.15); }} 70% {{ transform: scale(1); }} 100% {{ transform: scale(1); }} }}"
+            f"@keyframes drawSweepActive {{ 0% {{ stroke-dashoffset: 3500; opacity: 1; }} 75% {{ stroke-dashoffset: 0; opacity: 1; }} 90% {{ stroke-dashoffset: 0; opacity: 0; }} 95% {{ stroke-dashoffset: 3500; opacity: 0; }} 100% {{ stroke-dashoffset: 3500; opacity: 1; }} }}"
+            f"</style>"
+            f"<div style='background:linear-gradient(135deg,rgba(18,18,18,0.9),rgba(8,8,8,0.95)); padding:28px 36px; border-radius:14px; border-top:4px solid #EF5350; border:1px solid rgba(239,83,80,0.5); box-shadow: 0 0 25px rgba(239,83,80,0.4); margin-bottom:28px; position:relative; overflow:hidden;'>"
+            f"  <svg width='100%' height='100%' viewBox=\"0 0 1000 120\" preserveAspectRatio=\"none\" style='position:absolute; top:0; left:0; z-index:0; opacity: 0.35;'>"
+            f"    <path d='{path_d_active}' fill='none' stroke='{color_latido}' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' style='stroke-dasharray: 3500; stroke-dashoffset: 3500; animation: drawSweepActive 1.2s infinite;'/>"
+            f"  </svg>"
+            f"  <svg width='80' height='80' viewBox='0 0 100 100' style='position:absolute; top:50%; right:20px; transform:translateY(-50%); z-index:5; filter: drop-shadow(0px 0px 15px {color_latido}); animation: heartbeat {velocidad_corazon} infinite;'>"
+            f"    <g fill='{color_latido}' stroke='{color_latido}' stroke-width='2' stroke-linejoin='round'>"
+            f"      <path d='M45,28 C45,10 55,5 65,15 C68,18 68,22 62,26' fill='none' stroke-width='8'/>"
+            f"      <path d='M35,32 C35,15 40,10 45,10' fill='none' stroke-width='6'/>"
+            f"      <path d='M58,35 C70,25 80,25 82,32' fill='none' stroke-width='7'/>"
+            f"      <path d='M38,30 C15,25 10,55 35,78 C45,88 52,92 55,90 C70,75 88,50 72,32 C65,22 55,22 48,28 C45,25 42,25 38,30 Z' />"
+            f"    </g>"
+            f"  </svg>"
+            f"  <div style='position:relative; z-index:10; pointer-events:none;'>"
+            f"    <h2 style='margin:0 0 6px 0;color:#FFCDD2;font-weight:900;letter-spacing:1.5px; text-shadow: 0 0 12px rgba(239,83,80,0.8);'>MODULO DE EVALUACIÓN</h2>"
+            f"    <p style='margin:0;color:#E2E8F0;font-size:0.95rem; font-weight: 500;'>Ciclo Estral Comparado - Fisiología Animal Aplicada</p>"
+            f"  </div>"
+            f"</div>",
+            unsafe_allow_html=True
+          )
+      else:
+          # Diseño sobrio y academico para MODO PRACTICA (Banco de Preguntas)
+          st.markdown(
+            f"<div style='background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 1)); padding:28px 36px; border-radius:14px; border-left: 5px solid #3B82F6; border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin-bottom:28px;'>"
+            f"  <div style='position:relative; z-index:10;'>"
+            f"    <h2 style='margin:0 0 6px 0; color:#F8FAFC; font-weight:800; letter-spacing:1px;'>MODULO DE EVALUACIÓN (PRÁCTICA)</h2>"
+            f"    <p style='margin:0; color:#94A3B8; font-size:0.95rem; font-weight: 500;'>Ciclo Estral Comparado - Fisiología Animal Aplicada</p>"
+            f"  </div>"
+            f"</div>",
+            unsafe_allow_html=True
+          )
 
   # Guardias de estado
   if "eval_vista" not in st.session_state:
