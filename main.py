@@ -8,20 +8,34 @@ import json
 import sys, importlib
 if "evaluacion" in sys.modules:
     importlib.reload(sys.modules["evaluacion"])
-from evaluacion import renderizar_evaluacion, BANCO_PREGUNTAS
+from evaluacion import renderizar_evaluacion, BANCO_PREGUNTAS, get_global_exam_state
 
 import time
 import datetime
+import base64
+import os
 
-@st.cache_resource
-def get_global_exam_state():
-    return {
-        "activo": False,
-        "hora_inicio": None,
-        "registros": []
-    }
+def get_image_base64(ruta_local):
+    if not os.path.exists(ruta_local):
+        return ""
+    with open(ruta_local, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+        return f"data:image/png;base64,{encoded_string}"
 
 global_state = get_global_exam_state()
+
+# ROUTING PARA TARJETAS CLICKABLES NATIVAS
+if "nav_to" in st.query_params:
+    nav = st.query_params["nav_to"]
+    if nav == "banco":
+        st.session_state.etapa_actual = "evaluacion"
+        st.session_state.eval_vista = "practica"
+        st.session_state.practica_respuestas = {}
+    elif nav == "examen":
+        st.session_state.etapa_actual = "evaluacion"
+        st.session_state.eval_vista = "examen"
+        st.session_state.examen_desbloqueado = False
+    st.query_params.clear()
 
 # FUNCIONES UNIVERSALES DE SINCRONIZACIÓN DE ESTADO
 def sync_state(temp_key, real_key):
@@ -208,13 +222,13 @@ def aplicar_tema_dinamico(especie):
     </style>
     """, unsafe_allow_html=True)
 
-# INICIALIZACIÓN GLOBAL DE ESTADO (Para evitar State Loss)
+# INICIALIZACIÓN GLOBAL DE ESTADO (Para evitar State Loss en Refresh)
 if 'etapa_actual' not in st.session_state:
-  st.session_state.etapa_actual = 'portada'
+  st.session_state.etapa_actual = st.query_params.get('etapa', 'portada')
 if 'especie_seleccionada' not in st.session_state:
-  st.session_state.especie_seleccionada = None
+  st.session_state.especie_seleccionada = st.query_params.get('especie', None)
 if 'seccion_activa' not in st.session_state:
-  st.session_state.seccion_activa = 'Fases del Ciclo Estral'
+  st.session_state.seccion_activa = st.query_params.get('seccion', 'Fases del Ciclo Estral')
 
 # Configuración de página
 st.set_page_config(page_title="Granja Digital - Fisiología Reproductiva", layout="wide", initial_sidebar_state="collapsed")
@@ -1465,183 +1479,245 @@ def renderizar_simulador():
     """, unsafe_allow_html=True)
   
     st.markdown("<br>", unsafe_allow_html=True)
+    
+    especie_actual = st.session_state.get("especie_seleccionada", "Bovino")
+    if not especie_actual:
+        especie_actual = "Bovino"
+
+    # Diccionario Maestro (datos_especies)
+    datos_especies = {
+        "Bovino": {
+            "checklist": {"Reflejo de inmovilidad (dejarse montar)": 40, "Descarga de moco cervical claro (cristalino)": 20, "Inquietud y vocalización": 20, "Grupa o base de la cola raspada": 10, "Búsqueda del macho / intento de montar": 10},
+            "decisiones_ia": "**Regla AM/PM:** Detectado AM -> Inseminar PM. Dosis: 1 pajuela (0.5cc) en cuerpo del útero.",
+            "estrategias_deteccion": ["Observación Visual Tradicional (~40% de éxito)", "Collares de Precisión o Podómetros (~90% de éxito)"],
+            "roi_base": 150,
+            "desglose_perdidas": "Incluye: Costos de alimentación por días abiertos extras, pérdida de producción lechera (o kilos al destete) y gastos de mantenimiento improductivo."
+        },
+        "Porcino": {
+            "checklist": {"Reflejo de inmovilidad ante el verraco/presión en lomo": 40, "Orejas erguidas (paradas)": 20, "Vulva inflamada y enrojecida": 20, "Gruñidos característicos": 10, "Pérdida de apetito": 10},
+            "decisiones_ia": "**Inseminación:** A las 12-24 horas del inicio del reflejo de inmovilidad. Dosis: 80-100cc (2-3 mil millones espermatozoides).",
+            "estrategias_deteccion": ["Observación Visual sin Verraco (~50% de éxito)", "Detección con Verraco Marcador + Sensores (~90% de éxito)"],
+            "roi_base": 50,
+            "desglose_perdidas": "Incluye: Días no productivos (DNP) de la cerda, costo de ración diaria desperdiciada y reducción del índice de lechones por hembra al año."
+        },
+        "Ovino": {
+            "checklist": {"Búsqueda activa del carnero": 40, "Movimientos rápidos de la cola (coleo)": 30, "Vulva ligeramente hiperémica": 10, "Inquietud": 10, "Reflejo de inmovilidad ante el carnero": 10},
+            "decisiones_ia": "**Inseminación:** A las 12-18 horas de detectado el celo. Dosis: Intrauterina vía laparoscópica o intracervical profunda.",
+            "estrategias_deteccion": ["Detección Visual sin Macho Marcador (~30% de éxito)", "Efecto Macho + Implantes de Melatonina (~80% de éxito)"],
+            "roi_base": 30,
+            "desglose_perdidas": "Incluye: Menor número de corderos destetados al año, gastos de suplementación alimenticia improductiva y desincronización del rebaño."
+        },
+        "Caprino": {
+            "checklist": {"Vocalización constante (balidos)": 30, "Movimiento enérgico de la cola": 30, "Búsqueda del macho": 20, "Micción frecuente": 10, "Vulva hinchada con moco claro": 10},
+            "decisiones_ia": "**Inseminación:** A las 12-24 horas post detección. Dosis: Intracervical profunda (semen fresco/congelado).",
+            "estrategias_deteccion": ["Detección Visual sin Macho Marcador (~35% de éxito)", "Efecto Macho Programado + Esponjas/CIDR (~85% de éxito)"],
+            "roi_base": 25,
+            "desglose_perdidas": "Incluye: Días de lactancia perdidos, reducción en la cuota lechera anual y gastos de forraje en periodos secos extendidos."
+        },
+        "Equino": {
+            "checklist": {"Postura de micción frecuente (espejeo)": 40, "Elevación de la cola": 20, "Aceptación del padrillo (orejas hacia adelante)": 20, "Contracción rítmica de la vulva": 10, "Relajación pélvica": 10},
+            "decisiones_ia": "**Inseminación:** Antes de la ovulación (folículo > 35mm por ecografía). Dosis: 10-20cc de semen fresco/refrigerado.",
+            "estrategias_deteccion": ["Observación Conductual sin Ecografía (~45% de éxito)", "Ecografía Folicular Seriada + IA Dirigida (~90% de éxito)"],
+            "roi_base": 250,
+            "desglose_perdidas": "Incluye: Alta inversión en pensión/mantenimiento mensual de la yegua, devaluación comercial del potro por nacer tarde y honorarios veterinarios."
+        },
+        "Ave": {
+            "checklist": {"Receptividad a la monta (sentadilla)": 40, "Cresta y barbillas rojas turgentes": 20, "Distancia entre huesos pélvicos (> 2 dedos)": 20, "Cloaca húmeda y dilatada": 10, "Canto o vocalización receptiva": 10},
+            "decisiones_ia": "**Manejo:** Fotoperíodo 16L:8O. IA semanal para mantener fertilidad. Dosis: 0.05cc vía intravaginal.",
+            "estrategias_deteccion": ["Fotoperíodo Natural sin Control (~60% postura)", "Programa de Luz 16L:8O Automatizado (~85-90% postura)"],
+            "roi_base": 2,
+            "desglose_perdidas": "Incluye: Caída en la curva de postura (huevos no producidos), desperdicio de ración balanceada diaria y reducción del porcentaje de incubabilidad."
+        }
+    }
+
+    data_esp = datos_especies.get(especie_actual, datos_especies["Bovino"])
+  
     c1, c2 = st.columns([1.2, 1])
   
     with c1:
-      with st.container(border=False):
-        score_label = "Score de Postura" if species == "Ave" else "Score de Celo"
+      score_label = "Score de Postura" if especie_actual == "Ave" else "Score de Celo"
+      
+      with st.container(border=True):
         st.markdown(f"""
-        <div class='tinted-card' style='padding: 15px 20px !important;'>
-          <h4 class='gradient-title' style='margin:0; font-size: 1.3rem;'> {score_label}</h4>
+        <style>
+        .hover-jump {{
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        }}
+        .hover-jump:hover {{
+            transform: translateY(-4px) scale(1.015) !important;
+            box-shadow: 0 15px 30px rgba(var(--color-rgb), 0.25) !important;
+            border-color: rgba(var(--color-rgb), 0.5) !important;
+            z-index: 10;
+        }}
+        .hover-jump-red {{
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        }}
+        .hover-jump-red:hover {{
+            transform: translateY(-4px) scale(1.015) !important;
+            box-shadow: 0 15px 30px rgba(231, 29, 54, 0.25) !important;
+            border-color: rgba(231, 29, 54, 0.5) !important;
+            z-index: 10;
+        }}
+        </style>
+        <div class='hover-jump' style='background: rgba(var(--color-rgb), 0.05); border: 1px solid rgba(var(--color-rgb), 0.2); border-left: 4px solid var(--color-hex); padding: 15px; border-radius: 6px; margin-bottom: 20px;'>
+            <h3 style='color: var(--color-hex); margin: 0 0 8px 0; font-size: 1.4rem; padding: 0; border: none; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 12px rgba(var(--color-rgb), 0.6); letter-spacing: 1px;'>{score_label}</h3>
+            <p style='color: #B0B3B8; font-size: 0.9rem; margin: 0; line-height: 1.4;'>
+                Evalúe los signos clínicos de receptividad sexual. Marque cada comportamiento observado para calcular el índice y determinar el momento óptimo de servicio.
+            </p>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Inyectar CSS para colapsar márgenes de los switches y colorearlos a la fuerza
+        st.markdown("""
+        <style>
+        div[data-testid="stToggle"] { margin-bottom: -5px; }
+        div[data-testid="stToggle"] label > div:first-of-type { background-color: rgba(231, 29, 54, 0.4) !important; }
+        div[data-testid="stToggle"] label:has(input:checked) > div:first-of-type { background-color: #27AE60 !important; }
+        </style>
+        """, unsafe_allow_html=True)
+        
         score = 0
-      
-        # El primer signo de la lista siempre lo consideramos el Primario (100 pts)
-        for i, signo in enumerate(data["checklist"]):
-          temp_k = f"temp_chk_{species}_{i}"
-          real_k = f"chk_{species}_{i}"
+        for i, (signo, puntos) in enumerate(data_esp["checklist"].items()):
+          temp_k = f"temp_chk_{especie_actual}_{i}"
+          real_k = f"chk_{especie_actual}_{i}"
           if temp_k not in st.session_state:
             st.session_state[temp_k] = st.session_state.get(real_k, False)
-          st.checkbox(signo, key=temp_k, on_change=sync_state, args=(temp_k, real_k))
+          st.toggle(f"{signo}", key=temp_k, on_change=sync_state, args=(temp_k, real_k))
           is_checked = st.session_state.get(real_k, False)
           if is_checked:
-            if i == 0:
-              score += 100
-            else:
-              score += 25
-      
-        st.markdown("---")
-        if species == "Ave":
-          if score >= 100:
-            st.success(" **¡POSTURA ÓPTIMA CONFIRMADA!** Programa de luz 16L:8O activo. Jerarquía folicular F1-F5 funcional.")
-          elif score > 0 and score < 75:
-            st.warning(" **ALERTA DE POSTURA.** Revisar fotoperíodo, consumo de alimento y calidad de cáscara.")
-          elif score >= 75 and score < 100:
-            st.warning(" **POSTURA PROBABLE.** Verificar continuidad de la serie de postura y estado de la jerarquía folicular.")
-          else:
-            st.markdown("<div style='padding:1rem; background:rgba(22,27,34,0.6); border-radius:12px; border:1px solid rgba(255,255,255,0.1); color:#8B949E;'>ℹ Marque los indicadores de postura observados para generar el diagnóstico reproductivo automático.</div>", unsafe_allow_html=True)
+            score += puntos
+    
+        st.markdown("<hr style='margin: 15px 0; border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+        
+        # Alertas de diagnóstico estáticas rediseñadas
+        if score >= 80:
+            st.markdown("<div style='padding:15px; background:rgba(39, 174, 96, 0.1); border-left:4px solid #27AE60; border-radius:4px;'><span style='color:#27AE60; font-weight:bold;'>ÓPTIMO CONFIRMADO:</span> Proceder con el manejo o IA.</div>", unsafe_allow_html=True)
+        elif score >= 40:
+            st.markdown("<div style='padding:15px; background:rgba(249, 160, 63, 0.1); border-left:4px solid #F9A03F; border-radius:4px;'><span style='color:#F9A03F; font-weight:bold;'>EN PROGRESO / SOSPECHOSO:</span> Monitorear activamente. No inseminar aún.</div>", unsafe_allow_html=True)
         else:
-          if score >= 100:
-            st.success(" **¡CELO CONFIRMADÍSIMO!** Proceder al protocolo de Inseminación Artificial o Monta Dirigida.")
-          elif score > 0 and score < 75:
-            st.warning(" **SOSPECHA DE CELO (ESTRO INCOMPLETO).** No inseminar aún; se recomienda monitorear activamente.")
-          elif score >= 75 and score < 100:
-            st.warning(" **ALTA PROBABILIDAD DE CELO.** Signos secundarios evidentes. Observar de cerca para conformación primaria.")
-          else:
-            st.markdown("<div style='padding:1rem; background:rgba(22,27,34,0.6); border-radius:12px; border:1px solid rgba(255,255,255,0.1); color:#8B949E;'>ℹ Marque los signos clínicos observados en el hato para generar el diagnóstico reproductivo automático.</div>", unsafe_allow_html=True)
+            st.markdown("<div style='padding:15px; background:rgba(231, 29, 54, 0.1); border-left:4px solid #E71D36; border-radius:4px;'><span style='color:#E71D36; font-weight:bold;'>INACTIVO:</span> Marque los signos clínicos observados.</div>", unsafe_allow_html=True)
   
     with c2:
       with st.container(border=False):
-        ia_label = "Manejo Reproductivo" if species == "Ave" else "Decisiones de IA"
+        # Lógica del semáforo
+        if score < 40:
+            color_semaforo = "#E71D36" # Rojo
+            estado_texto = "INACTIVO / RIESGO"
+        elif score < 80:
+            color_semaforo = "#F9A03F" # Naranja
+            estado_texto = "EN PROGRESO / SOSPECHOSO"
+        else:
+            color_semaforo = "#27AE60" # Verde
+            estado_texto = "ÓPTIMO / PROCEDER"
+
+        # Visor 3D con Mapa de Calor
+        img_path = f"{especie_actual.lower()}_base.png"
+        img_b64 = get_image_base64(img_path)
+        img_src = img_b64 if img_b64 else img_path
+
         st.markdown(f"""
-        <div class='tinted-card' style='padding: 15px 20px !important;'>
-          <h4 class='gradient-title' style='margin:0; font-size: 1.3rem;'> {ia_label}</h4>
+        <style>
+        .visor-3d-container {{
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+        }}
+        .animal-wrapper {{
+            position: relative;
+            display: inline-block;
+            width: 80%;
+            max-width: 250px;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 15px 30px {color_semaforo}90);
+        }}
+        .animal-wrapper:hover {{
+            transform: scale(1.05) rotate(2deg);
+        }}
+        .animal-image {{
+            width: 100%;
+            display: block;
+        }}
+        .animal-tint {{
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: {color_semaforo};
+            mix-blend-mode: multiply;
+            pointer-events: none;
+            transition: background-color 0.8s ease-in-out;
+            -webkit-mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            mask-position: center;
+        }}
+        .visor-badge {{
+            background-color: {color_semaforo};
+            color: #FFFFFF;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            transition: background-color 0.8s ease-in-out;
+        }}
+        </style>
+        <div class="visor-3d-container">
+            <div class="visor-badge">DIAGNÓSTICO: {estado_texto} (SCORE: {score})</div>
+            <br>
+            <div class="animal-wrapper">
+                <img class="animal-image" src="{img_src}" alt="Visor Anatómico {especie_actual}">
+                <div class="animal-tint" style="-webkit-mask-image: url('{img_src}'); mask-image: url('{img_src}');"></div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
-      
-        if species == "Bovino":
-          st.markdown("**Simulador Interactivo de Regla AM/PM:**")
-          if "temp_hora_celo_radio" not in st.session_state:
-            st.session_state.temp_hora_celo_radio = st.session_state.get("hora_celo_radio", "Celo Detectado en la Mañana (AM - ej. 07:00 AM)")
-          st.radio(
-            "¿A qué hora del día detectó el inicio del celo activo?",
-            ["Celo Detectado en la Mañana (AM - ej. 07:00 AM)", "Celo Detectado en la Tarde/Noche (PM - ej. 05:00 PM)"],
-            key="temp_hora_celo_radio",
-            on_change=sync_state,
-            args=("temp_hora_celo_radio", "hora_celo_radio")
-          )
-          hora_celo = st.session_state.get("hora_celo_radio", "Celo Detectado en la Mañana (AM - ej. 07:00 AM)")
-          st.markdown("<br>", unsafe_allow_html=True)
-          if "AM" in hora_celo:
+        
+        ia_label = "Manejo Reproductivo" if especie_actual == "Ave" else "Decisiones de IA"
+        
+        with st.container(border=True):
+            st.markdown(f"<h3 style='color: var(--color-hex); margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid rgba(var(--color-rgb), 0.2); font-weight: 900; text-transform: uppercase; text-shadow: 0 0 12px rgba(var(--color-rgb), 0.6); letter-spacing: 1px;'>{ia_label}</h3>", unsafe_allow_html=True)
+            
+            recomendacion = data_esp['decisiones_ia'].replace('**Manejo:** ', '').replace('**Manejo:**', '')
             st.markdown(f"""
-            <div class="tinted-card">
-                <div class="agro-badge">REGLA AM/PM</div>
-                <h3 class="gradient-title"> Ventana Óptima de IA</h3>
-                <p style="font-size: 1.1rem; color: #E0E0E0; line-height: 1.6;">
-                    Inseminar hoy por la tarde (estimado 3:00 PM - 5:00 PM).<br>
-                    <strong>Ovulación estimada:</strong> 7:00 PM (12 horas post-celo).
+            <div class="hover-jump" style="background: rgba(var(--color-rgb), 0.05); border: 1px solid rgba(var(--color-rgb), 0.1); border-left: 3px solid var(--color-hex); padding: 12px 15px; border-radius: 4px; margin-bottom: 15px;">
+                <span style="color: var(--color-hex); font-weight: bold; font-size: 0.9rem;">RECOMENDACIÓN CLÍNICA</span><br>
+                <span style="color: #E2E8F0; font-size: 0.95rem;">{recomendacion}</span>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            c_est, c_hato = st.columns([2.2, 1.3])
+            with c_est:
+                if "temp_estrategia_select" not in st.session_state:
+                    st.session_state.temp_estrategia_select = st.session_state.get("estrategia_select", data_esp["estrategias_deteccion"][0])
+                if st.session_state.temp_estrategia_select not in data_esp["estrategias_deteccion"]:
+                    st.session_state.temp_estrategia_select = data_esp["estrategias_deteccion"][0]
+                    st.session_state.estrategia_select = data_esp["estrategias_deteccion"][0]
+        
+                st.markdown("<div style='display:inline-block; background:rgba(var(--color-rgb),0.1); border:1px solid rgba(var(--color-rgb),0.4); color:var(--color-hex); padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:bold; letter-spacing:1px; margin-bottom:8px; box-shadow: 0 0 8px rgba(var(--color-rgb),0.2);'>ESTRATEGIA DE DETECCIÓN</div>", unsafe_allow_html=True)
+                st.selectbox("Estrategia de Detección:", data_esp["estrategias_deteccion"], key="temp_estrategia_select", on_change=sync_state, args=("temp_estrategia_select", "estrategia_select"), label_visibility="collapsed")
+                
+            with c_hato:
+                st.markdown("<div style='display:inline-block; background:rgba(var(--color-rgb),0.1); border:1px solid rgba(var(--color-rgb),0.4); color:var(--color-hex); padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:bold; letter-spacing:1px; margin-bottom:8px; box-shadow: 0 0 8px rgba(var(--color-rgb),0.2);'>TAMAÑO DE LOTE</div>", unsafe_allow_html=True)
+                hato_size = st.number_input("Tamaño del Hato / Lote:", min_value=1, max_value=100000, value=100, step=10, label_visibility="collapsed")
+                
+            perdida_total = data_esp["roi_base"] * hato_size
+            
+            st.markdown(f"""
+            <div class="hover-jump-red" style="background: rgba(231, 29, 54, 0.05); border: 1px solid rgba(231, 29, 54, 0.3); border-left: 4px solid #E71D36; padding: 15px; border-radius: 6px; margin-top: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="background-color: #E71D36; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">IMPACTO ECONÓMICO</span>
+                </div>
+                <h3 style="color: #E71D36; margin: 10px 0 5px 0; font-size: 1.5rem;">Pérdida Potencial: ${perdida_total:,.2f} USD</h3>
+                <p style="font-size: 0.85rem; color: #A0AEC0; margin-bottom: 0;">
+                    <strong style="color: #FC8181;">Costo Base: ${data_esp['roi_base']} USD/animal</strong> por falla técnica/reproductiva.<br>
+                    <span style="color: #E2E8F0; font-weight: bold;">{data_esp.get('desglose_perdidas', '')}</span>
                 </p>
             </div>
             """, unsafe_allow_html=True)
-          else:
-            st.markdown(f"""
-            <div class="tinted-card">
-                <div class="agro-badge">REGLA AM/PM</div>
-                <h3 class="gradient-title"> Ventana Óptima de IA</h3>
-                <p style="font-size: 1.1rem; color: #E0E0E0; line-height: 1.6;">
-                    Inseminar mañana por la mañana a primera hora (estimado 7:00 AM).<br>
-                    <strong>Ovulación estimada:</strong> 5:00 AM del día siguiente.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-          for regla in data["ia_window"]:
-            st.markdown(f"- {regla}")
-          
-      with st.container(border=False):
-        # Diccionario de ROI dinámico por especie
-        ROI_DATA = {
-          "Bovino": {
-            "select_label": " Estrategia de Detección de Celo:",
-            "opciones": ["Observación Visual Tradicional (~40% de éxito)", "Collares de Precisión o Monitoreo Automatizado (~90% de éxito)"],
-            "obs_msg": " Pérdida anual silenciosa de $150-200 USD por vaca. El 60-70% de las montas de celo ocurren de noche cuando no hay personal vigilando.",
-            "tech_msg": " Sincronización de datos en tiempo real. ROI tecnológico estimado en menos de 6 meses al reducir días abiertos."
-          },
-          "Porcino": {
-            "select_label": " Estrategia de Detección de Celo:",
-            "opciones": ["Observación Visual sin Verraco (~50% de éxito)", "Detección con Verraco Marcador + Sensores (~90% de éxito)"],
-            "obs_msg": " Pérdida por retraso post-destete: $50-80 USD por cerda/ciclo. Sin verraco marcador, el reflejo de inmovilidad es difícil de confirmar.",
-            "tech_msg": " Detección automatizada con sensores + IATF post-destete. ROI en 2-3 ciclos productivos al sincronizar lotes completos."
-          },
-          "Ovino": {
-            "select_label": " Estrategia Reproductiva:",
-            "opciones": ["Detección Visual sin Macho Marcador (~30% de éxito)", "Efecto Macho + Implantes de Melatonina (~80% de éxito)"],
-            "obs_msg": " Celos discretos, TDC <30% sin machos marcadores. Pérdida estimada: $30-50 USD por oveja/temporada reproductiva.",
-            "tech_msg": " Efecto macho + implantes de melatonina (Melovine). Recuperación de inversión en 1 temporada reproductiva."
-          },
-          "Caprino": {
-            "select_label": " Estrategia Reproductiva:",
-            "opciones": ["Detección Visual sin Macho Marcador (~35% de éxito)", "Efecto Macho Programado + Esponjas/CIDR (~85% de éxito)"],
-            "obs_msg": " TDC <35% sin efecto macho. Pérdida estimada: $25-45 USD por cabra/temporada por celos no detectados.",
-            "tech_msg": " Efecto macho programado + esponjas/CIDR. ROI en la primera temporada reproductiva del hato."
-          },
-          "Equino": {
-            "select_label": " Estrategia Reproductiva:",
-            "opciones": ["Observación Conductual sin Ecografía (~45% de éxito)", "Ecografía Folicular Seriada + IA Dirigida (~90% de éxito)"],
-            "obs_msg": " Estro prolongado (4-7 días) dificulta el timing de IA. Pérdida estimada: $200-500 USD por ciclo fallido en la hembra equina.",
-            "tech_msg": " Ecografía folicular seriada + IA durante el estro. ROI en 1-2 ciclos reproductivos al optimizar el momento de inseminación."
-          },
-          "Ave": {
-            "select_label": " Estrategia de Manejo de Postura:",
-            "opciones": ["Fotoperíodo Natural sin Control (~60% postura)", "Programa de Luz 16L:8O Automatizado (~85-90% postura)"],
-            "obs_msg": " Fotoperíodo inadecuado → caída del 15-30% en postura. Pérdida estimada: $0.10-0.15 USD por ave/día en huevos no producidos.",
-            "tech_msg": " Programa 16L:8O con temporizador automatizado. ROI en 30-60 días por lote al maximizar la jerarquía folicular activa."
-          }
-        }
-
-        roi = ROI_DATA.get(species, ROI_DATA["Bovino"])
-        if "temp_estrategia_deteccion_select" not in st.session_state:
-          st.session_state.temp_estrategia_deteccion_select = st.session_state.get("estrategia_deteccion_select", roi["opciones"][0])
-        # Reset si la opción actual no pertenece a la especie actual
-        if st.session_state.temp_estrategia_deteccion_select not in roi["opciones"]:
-          st.session_state.temp_estrategia_deteccion_select = roi["opciones"][0]
-          st.session_state.estrategia_deteccion_select = roi["opciones"][0]
-          
-        st.markdown("<hr style='border-color:rgba(255,255,255,0.05);'>", unsafe_allow_html=True)
-        st.selectbox(roi["select_label"], roi["opciones"], key="temp_estrategia_deteccion_select", on_change=sync_state, args=("temp_estrategia_deteccion_select", "estrategia_deteccion_select"))
-        tech = st.session_state.get("estrategia_deteccion_select", roi["opciones"][0])
-      
-        if tech == roi["opciones"][0]:
-          obs_text = roi["obs_msg"].replace("**", "")
-          parts = obs_text.split(". ", 1)
-          alert_part = parts[0] + "." if len(parts) > 1 else obs_text
-          text_part = parts[1] if len(parts) > 1 else ""
-          st.markdown(f"""
-          <div class="tinted-card">
-              <span class="agro-badge" style="background-color: #FF3366 !important; color: white !important;">ALERTA ECONÓMICA</span>
-              <h3 class="gradient-title"> Retorno de Inversión (ROI)</h3>
-              <h4 style="color:#FF3366; margin:10px 0 5px 0;"> {alert_part}</h4>
-              <p style="font-size: 1rem; color: #B0B3B8;">
-                  {text_part}
-              </p>
-          </div>
-          """, unsafe_allow_html=True)
-        else:
-          tech_text = roi["tech_msg"].replace("**", "")
-          parts = tech_text.split(". ", 1)
-          alert_part = parts[0] + "." if len(parts) > 1 else tech_text
-          text_part = parts[1] if len(parts) > 1 else ""
-          st.markdown(f"""
-          <div class="tinted-card">
-              <span class="agro-badge">ROI POSITIVO</span>
-              <h3 class="gradient-title"> Retorno de Inversión (ROI)</h3>
-              <h4 style="color:#4CAF50; margin:10px 0 5px 0;"> {alert_part}</h4>
-              <p style="font-size: 1rem; color: #B0B3B8;">
-                  {text_part}
-              </p>
-          </div>
-          """, unsafe_allow_html=True)
   
   # --- SECCIÓN 3: LABORATORIO DE SIMULACIÓN Y COMPLICACIONES ---
   if st.session_state.seccion_activa == "Laboratorio de Simulacion":
@@ -2433,39 +2509,45 @@ if st.session_state.etapa_actual == "portada":
   #  Dos botones de ruta directa al módulo de preguntas 
   col_b1, col_b2, col_b3 = st.columns([1, 1.2, 1])
   with col_b2:
-    st.markdown(
-      "<div style='display:flex;gap:20px;margin-bottom:20px;'>"
 
-      "<div style='flex:1;background:linear-gradient(145deg, rgba(76,175,80,0.1) 0%, rgba(20,40,25,0.85) 100%);padding:22px 18px;"
-      "border-radius:16px;border:1px solid rgba(76,175,80,0.4);border-top:5px solid #00E676;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.6);'>"
-      "<p style='margin:0 0 10px 0;color:#00E676;font-weight:900;font-size:1.05rem;"
-      "letter-spacing:2px;text-transform:uppercase;text-shadow:0 2px 8px rgba(0,230,118,0.4);'>Banco de Preguntas</p>"
-      "<p style='margin:0;color:#E0E0E0;font-size:0.85rem;line-height:1.6;'>"
-      "<b>55 preguntas interactivas.</b><br>Prepárate para la evaluación real.</p></div>"
+    st.markdown("""
+    <style>
+    .link-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-decoration: none !important;
+        display: block;
+        height: 100%;
+        box-sizing: border-box;
+    }
+    .link-card * {
+        text-decoration: none !important;
+    }
+    .link-card:hover {
+        transform: translateY(-5px);
+    }
+    .link-card-green:hover {
+        box-shadow: 0 12px 40px rgba(0,230,118,0.3) !important;
+        border: 1px solid #00E676 !important;
+    }
+    .link-card-purple:hover {
+        box-shadow: 0 12px 40px rgba(224,64,251,0.3) !important;
+        border: 1px solid #E040FB !important;
+    }
+    </style>
+    <div style='display:flex;gap:20px;margin-bottom:20px;justify-content:center;align-items:stretch;'>
+      
+      <a href="?nav_to=banco" target="_self" class="link-card link-card-green" style='text-decoration:none !important;flex:1;background:linear-gradient(145deg, rgba(76,175,80,0.1) 0%, rgba(20,40,25,0.85) 100%);padding:22px 18px;border-radius:16px;border:1px solid rgba(76,175,80,0.4);border-top:5px solid #00E676;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.6);'>
+        <p style='margin:0 0 10px 0;color:#00E676;font-weight:900;font-size:1.05rem;letter-spacing:2px;text-transform:uppercase;text-shadow:0 2px 8px rgba(0,230,118,0.4);'>Banco de Preguntas</p>
+        <p style='margin:0;color:#E0E0E0;font-size:0.85rem;line-height:1.6;'><b>55 preguntas interactivas.</b><br>Prepárate para la evaluación real.</p>
+      </a>
 
-      "<div style='flex:1;background:linear-gradient(145deg, rgba(156,39,176,0.1) 0%, rgba(40,20,45,0.85) 100%);padding:22px 18px;"
-      "border-radius:16px;border:1px solid rgba(156,39,176,0.4);border-top:5px solid #E040FB;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.6);'>"
-      "<p style='margin:0 0 10px 0;color:#E040FB;font-weight:900;font-size:1.05rem;"
-      "letter-spacing:2px;text-transform:uppercase;text-shadow:0 2px 8px rgba(224,64,251,0.4);'>Evaluación Estral</p>"
-      "<p style='margin:0;color:#E0E0E0;font-size:0.85rem;line-height:1.6;'>"
-      "<b>20 preguntas aleatorias.</b><br>Umbral de aprobación: 80%.</p></div>"
+      <a href="?nav_to=examen" target="_self" class="link-card link-card-purple" style='text-decoration:none !important;flex:1;background:linear-gradient(145deg, rgba(156,39,176,0.1) 0%, rgba(40,20,45,0.85) 100%);padding:22px 18px;border-radius:16px;border:1px solid rgba(156,39,176,0.4);border-top:5px solid #E040FB;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.6);'>
+        <p style='margin:0 0 10px 0;color:#E040FB;font-weight:900;font-size:1.05rem;letter-spacing:2px;text-transform:uppercase;text-shadow:0 2px 8px rgba(224,64,251,0.4);'>Evaluación Estral</p>
+        <p style='margin:0;color:#E0E0E0;font-size:0.85rem;line-height:1.6;'><b>20 preguntas aleatorias.</b><br>Umbral de aprobación: 80%.</p>
+      </a>
 
-      "</div>",
-      unsafe_allow_html=True
-    )
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-      if st.button("Banco de Preguntas", use_container_width=True, key="btn_ir_practica_home"):
-        st.session_state.etapa_actual = "evaluacion"
-        st.session_state.eval_vista = "practica"
-        st.session_state.practica_respuestas = {}
-        st.rerun()
-    with col_btn2:
-      if st.button("Evaluación Estral", use_container_width=True, key="btn_ir_examen_home"):
-        st.session_state.etapa_actual = "evaluacion"
-        st.session_state.eval_vista = "examen"
-        st.session_state.examen_desbloqueado = False
-        st.rerun()
+    </div>
+    """, unsafe_allow_html=True)
 
 elif st.session_state.etapa_actual == "seleccion":
   st.markdown("<br>", unsafe_allow_html=True)
@@ -2774,7 +2856,7 @@ elif st.session_state.etapa_actual == "evaluacion":
 
   # Guardias de estado
   if "eval_vista" not in st.session_state:
-    st.session_state.eval_vista = "practica"
+    st.session_state.eval_vista = st.query_params.get("vista", "practica")
   if "examen_desbloqueado" not in st.session_state:
     st.session_state.examen_desbloqueado = False
   if "practica_respuestas" not in st.session_state:
@@ -3065,3 +3147,11 @@ elif st.session_state.etapa_actual == "evaluacion":
                 st.session_state.eval_global_end_time = gs["hora_inicio"] + datetime.timedelta(minutes=20)
                 renderizar_evaluacion()
 
+# --- SINCRONIZACIÓN DE ESTADO CON URL (PERSISTENCIA AL REFRESCAR) ---
+st.query_params["etapa"] = st.session_state.etapa_actual
+if st.session_state.get("especie_seleccionada"):
+    st.query_params["especie"] = st.session_state.especie_seleccionada
+if st.session_state.get("seccion_activa"):
+    st.query_params["seccion"] = st.session_state.seccion_activa
+if st.session_state.get("eval_vista"):
+    st.query_params["vista"] = st.session_state.eval_vista
