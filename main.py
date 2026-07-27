@@ -2826,8 +2826,8 @@ elif st.session_state.etapa_actual == "evaluacion":
           margin: 0;
       }
       .stRadio div[role="radiogroup"] > label:hover {
-          background: rgba(76, 175, 80, 0.08);
-          border-color: rgba(76, 175, 80, 0.4);
+          background: rgba(239, 83, 80, 0.08);
+          border-color: rgba(239, 83, 80, 0.4);
           transform: translateY(-3px);
           box-shadow: 0 6px 20px rgba(0,0,0,0.25);
       }
@@ -2848,19 +2848,78 @@ elif st.session_state.etapa_actual == "evaluacion":
       }
       /* Ocultar el círculo nativo */
       .stRadio div[role="radiogroup"] > label > div:first-child { display: none; }
+      /* Forzar borde rojo para botón de volver al inicio u otros */
+      div.stButton > button { border-left-color: #EF5350 !important; }
     </style>
   """, unsafe_allow_html=True)
 
   # Cabecera del módulo
-  st.markdown(
-    "<div style='background:linear-gradient(135deg,rgba(22,33,25,0.9),rgba(12,22,16,0.95));"
-    "padding:28px 36px;border-radius:14px;border-top:4px solid #4CAF50;"
-    "border:1px solid rgba(76,175,80,0.2);margin-bottom:28px;'>"
-    "<h2 style='margin:0 0 6px 0;color:#4CAF50;font-weight:700;letter-spacing:1px;'>MODULO DE EVALUACION</h2>"
-    "<p style='margin:0;color:#B0BEC5;font-size:0.92rem;'>Ciclo Estral Comparado - Fisiologia Animal Aplicada</p>"
-    "</div>",
-    unsafe_allow_html=True
-  )
+  fase_actual = st.session_state.get("eval_fase", "")
+  
+  if fase_actual == "activo":
+      color_latido = "#EF5350"
+      velocidad_corazon = "0.35s"
+      borde_color = "#EF5350"
+      border_rgba = "rgba(239,83,80,0.5)"
+      caja_sombra = "0 0 25px rgba(239,83,80,0.4)"
+      texto_color = "#FFCDD2"
+      texto_sombra = "rgba(239,83,80,0.8)"
+      path_points = ["M 0 60"]
+      x = 0
+      for _ in range(7):
+          path_points.append(f"L {x+15} 60 Q {x+25} 50 {x+35} 60 L {x+40} 60 L {x+45} 75 L {x+55} -10 L {x+65} 130 L {x+70} 60 L {x+80} 60 Q {x+90} 45 {x+105} 60")
+          x += 125
+      path_points.append("L 1000 60")
+      path_d_active = " ".join(path_points)
+
+      svg_bg = f"""
+  <svg width='100%' height='100%' viewBox="0 0 1000 120" preserveAspectRatio="none" style='position:absolute; top:0; left:0; z-index:0; opacity: 0.35;'>
+    <path d='{path_d_active}' fill='none' stroke='{color_latido}' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' 
+          style='stroke-dasharray: 3500; stroke-dashoffset: 3500; animation: drawSweepActive 1.2s infinite;'/>
+  </svg>"""
+  else:
+      color_latido = "#EF5350"
+      velocidad_corazon = "1.25s"
+      borde_color = "#EF5350"
+      border_rgba = "rgba(239,83,80,0.3)"
+      caja_sombra = "0 0 15px rgba(239,83,80,0.15)"
+      texto_color = "#FFCDD2"
+      texto_sombra = "rgba(239,83,80,0.5)"
+      path_d = "M 0 60 L 300 60 Q 310 50 320 60 L 325 60 L 330 70 L 340 25 L 350 85 L 355 60 L 375 60 Q 385 45 400 60 L 440 60 Q 450 50 460 60 L 465 60 L 470 70 L 480 25 L 490 85 L 495 60 L 515 60 Q 525 45 540 60 L 800 60"
+      svg_bg = f"""
+  <svg width='100%' height='100%' viewBox="0 0 800 120" preserveAspectRatio="none" style='position:absolute; top:0; left:0; z-index:0; opacity: 0.3;'>
+    <path d='{path_d}' fill='none' stroke='{color_latido}' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' 
+          style='stroke-dasharray: 1200; stroke-dashoffset: 1200; animation: drawSweep 3s infinite;'/>
+  </svg>"""
+
+  render_header = st.session_state.get("eval_estudiante", {}).get("rol", "") != "admin"
+  if render_header:
+      st.markdown(
+        f"<style>"
+        f":root {{ --color-hex: #EF5350 !important; --color-rgb: 239, 83, 80 !important; }}"
+        f"@keyframes heartbeat {{ 0% {{ transform: scale(1); }} 15% {{ transform: scale(1.15); }} 30% {{ transform: scale(1); }} 45% {{ transform: scale(1.15); }} 70% {{ transform: scale(1); }} 100% {{ transform: scale(1); }} }}"
+        f"@keyframes drawSweep {{ 0% {{ stroke-dashoffset: 1200; opacity: 1; }} 60% {{ stroke-dashoffset: 0; opacity: 1; }} 80% {{ stroke-dashoffset: 0; opacity: 0; }} 81% {{ stroke-dashoffset: 1200; opacity: 0; }} 100% {{ stroke-dashoffset: 1200; opacity: 0; }} }}"
+        f"@keyframes drawSweepActive {{ 0% {{ stroke-dashoffset: 3500; opacity: 1; }} 75% {{ stroke-dashoffset: 0; opacity: 1; }} 90% {{ stroke-dashoffset: 0; opacity: 0; }} 95% {{ stroke-dashoffset: 3500; opacity: 0; }} 100% {{ stroke-dashoffset: 3500; opacity: 1; }} }}"
+        f"</style>"
+        f"<div style='background:linear-gradient(135deg,rgba(18,18,18,0.9),rgba(8,8,8,0.95));"
+        f"padding:28px 36px;border-radius:14px;border-top:4px solid {borde_color};"
+        f"border:1px solid {border_rgba}; box-shadow: {caja_sombra}; margin-bottom:28px; position:relative; overflow:hidden;'>"
+        f"  {svg_bg}"
+        f"  <svg width='80' height='80' viewBox='0 0 100 100' style='position:absolute; top:50%; right:20px; transform:translateY(-50%); z-index:5; filter: drop-shadow(0px 0px 15px {color_latido}); animation: heartbeat {velocidad_corazon} infinite;'>"
+        f"    <g fill='{color_latido}' stroke='{color_latido}' stroke-width='2' stroke-linejoin='round'>"
+        f"      <path d='M45,28 C45,10 55,5 65,15 C68,18 68,22 62,26' fill='none' stroke-width='8'/>"
+        f"      <path d='M35,32 C35,15 40,10 45,10' fill='none' stroke-width='6'/>"
+        f"      <path d='M58,35 C70,25 80,25 82,32' fill='none' stroke-width='7'/>"
+        f"      <path d='M38,30 C15,25 10,55 35,78 C45,88 52,92 55,90 C70,75 88,50 72,32 C65,22 55,22 48,28 C45,25 42,25 38,30 Z' />"
+        f"    </g>"
+        f"  </svg>"
+        f"  <div style='position:relative; z-index:10; pointer-events:none;'>"
+        f"    <h2 style='margin:0 0 6px 0;color:{texto_color};font-weight:900;letter-spacing:1.5px; text-shadow: 0 0 12px {texto_sombra};'>MODULO DE EVALUACION</h2>"
+        f"    <p style='margin:0;color:#E2E8F0;font-size:0.95rem; font-weight: 500;'>Ciclo Estral Comparado - Fisiologia Animal Aplicada</p>"
+        f"  </div>"
+        f"</div>",
+        unsafe_allow_html=True
+      )
 
   # Guardias de estado
   if "eval_vista" not in st.session_state:
@@ -2997,25 +3056,26 @@ elif st.session_state.etapa_actual == "evaluacion":
     if not st.session_state.examen_desbloqueado:
       st.markdown("<br>", unsafe_allow_html=True)
       st.markdown(
-        "<div style='max-width:460px;margin:0 auto;padding:36px 40px;"
-        "background:rgba(22,33,25,0.92);border:1px solid rgba(76,175,80,0.3);"
-        "border-top:3px solid #4CAF50;border-radius:16px;"
-        "backdrop-filter:blur(14px);box-shadow:0 12px 40px rgba(0,0,0,0.5);text-align:center;'>"
-        "<p style='font-size:2rem;margin:0 0 8px 0;'>&#128274;</p>"
-        "<h3 style='color:#4CAF50;margin:0 0 6px 0;font-size:1.25rem;'>Evaluacion Formal Protegida</h3>"
-        "<p style='color:#8B949E;font-size:0.87rem;margin:0 0 24px 0;'>"
+        "<div style='max-width:460px; margin:0 auto; padding:40px 45px;"
+        "background: linear-gradient(135deg, rgba(22,10,10,0.8), rgba(12,8,8,0.95));"
+        "border: 1px solid rgba(239, 83, 80, 0.4); border-top: 4px solid #EF5350; border-radius: 20px;"
+        "backdrop-filter: blur(15px); box-shadow: 0 15px 40px rgba(0,0,0,0.6); text-align:center; position: relative; overflow: hidden;'>"
+        "<div style='position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(239,83,80,0.08) 0%, transparent 60%); pointer-events:none;'></div>"
+        "<h3 style='color:#F8FAFC; margin:0 0 10px 0; font-size:1.4rem; font-weight:700; letter-spacing: 0.5px;'>Evaluacion Formal Protegida</h3>"
+        "<p style='color:#94A3B8; font-size:0.95rem; margin:0 0 25px 0; line-height: 1.5;'>"
         "Esta seccion requiere contrasena de acceso.<br>Solicitala a tu docente.</p>"
         "</div>",
         unsafe_allow_html=True
       )
-      col_pw1, col_pw2, col_pw3 = st.columns([1, 2, 1])
+      col_pw1, col_pw2, col_pw3 = st.columns([1, 1, 1])
       with col_pw2:
+        st.markdown("<br>", unsafe_allow_html=True)
         clave = st.text_input(
           "Contrasena", type="password",
           placeholder="Ingresa la contrasena",
           key="input_clave_examen", label_visibility="collapsed"
         )
-        if st.button("Ingresar", use_container_width=True, key="btn_unlock_examen"):
+        if st.button("INGRESAR", use_container_width=True, type="primary", key="btn_unlock_examen"):
           if clave == "agroestral2026":
             st.session_state.examen_desbloqueado = True
             st.session_state.examen_registrado = False
@@ -3026,15 +3086,16 @@ elif st.session_state.etapa_actual == "evaluacion":
     else:
       if not st.session_state.get("examen_registrado", False):
         st.markdown("<br>", unsafe_allow_html=True)
-        col_reg1, col_reg2, col_reg3 = st.columns([1, 2, 1])
+        col_reg1, col_reg2, col_reg3 = st.columns([1, 1, 1])
         with col_reg2:
           st.markdown(
-            "<div style='padding:30px; background:rgba(22,33,25,0.92);border:1px solid rgba(76,175,80,0.3);"
-            "border-top:3px solid #4CAF50;border-radius:16px; margin-bottom: 20px;'>"
-            "<h3 style='color:#4CAF50;margin:0 0 15px 0;text-align:center;'>Registro de Estudiante</h3>"
-            "<p style='color:#B0BEC5;font-size:0.9rem;text-align:center;margin-bottom:0;'>"
-            "Por favor, completa tus datos para iniciar la evaluación. <br>"
-            "<b>Nota:</b> Tendrás un límite estricto de 20 minutos una vez inicies.</p>"
+            "<div style='padding:35px 40px; background: linear-gradient(135deg, rgba(18,18,18,0.9), rgba(8,8,8,0.95));"
+            "border: 1px solid rgba(239, 83, 80, 0.4); border-top: 4px solid #EF5350; border-radius: 20px;"
+            "margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);'>"
+            "<h3 style='color:#F8FAFC; margin:0 0 15px 0; text-align:center; font-weight:700; font-size:1.3rem;'>Registro de Estudiante</h3>"
+            "<p style='color:#94A3B8; font-size:0.95rem; text-align:center; margin-bottom:0; line-height:1.6;'>"
+            "Por favor, completa tus datos para iniciar la evaluación.<br>"
+            "<span style='color:#EF5350; font-weight:600;'>Nota:</span> Tendrás un límite estricto de 20 minutos una vez inicies.</p>"
             "</div>", unsafe_allow_html=True
           )
           nombre = st.text_input("Nombre y Apellido", key="reg_nombre")
@@ -3059,15 +3120,47 @@ elif st.session_state.etapa_actual == "evaluacion":
       else:
         rol = st.session_state.eval_estudiante.get("rol", "student")
         if rol == "admin":
-            st.markdown("<h2 style='color:#4CAF50; text-align:center;'>Panel Analítico del Administrador</h2>", unsafe_allow_html=True)
+            st.markdown("""
+<div style='text-align:center; padding:35px 25px; background:linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(8, 15, 30, 0.95)); border-radius:16px; margin-bottom:30px; border: 1px solid rgba(99, 102, 241, 0.4); border-top: 4px solid #6366F1; box-shadow: 0 15px 40px rgba(0,0,0,0.5); backdrop-filter: blur(15px); position:relative; overflow:hidden;'>
+    <div style='position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 50%); pointer-events:none;'></div>
+    <h2 style='color:#F8FAFC; margin:0; font-weight:800; font-size:1.6rem; letter-spacing: 1.5px; position:relative; z-index:2; text-shadow: 0 0 15px rgba(99,102,241,0.6);'>
+        <span style='color:#6366F1;'>■</span> PANEL DE CONTROL DOCENTE
+    </h2>
+    <p style='color:#94A3B8; margin-top:10px; margin-bottom:0; font-size:0.95rem; font-weight:500; position:relative; z-index:2;'>Centro de Mando Analítico en Tiempo Real</p>
+</div>
+""", unsafe_allow_html=True)
             gs = get_global_exam_state()
             
+            # --- TARJETAS DE CONTROL ---
             c1, c2 = st.columns(2)
             with c1:
+                st.markdown("""
+                <div style='background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9)); padding: 25px; border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.5); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); margin-bottom: 20px; text-align: center;'>
+                    <h3 style='color:#818CF8; margin:0 0 10px 0; font-weight:800; letter-spacing:1px;'>AGENDAMIENTO</h3>
+                    <p style='color:#94A3B8; font-size:0.95rem; margin:0;'>Programa la hora exacta de inicio de la evaluación.</p>
+                </div>
+                <style>
+                div[data-testid="stTextInput"] input {
+                    font-size: 1.25rem !important;
+                    padding: 16px !important;
+                    border: 2px solid #818CF8 !important;
+                    border-radius: 10px !important;
+                    background-color: rgba(15, 23, 42, 0.9) !important;
+                    color: #FFFFFF !important;
+                    text-align: center !important;
+                    box-shadow: 0 0 15px rgba(129, 140, 248, 0.2) !important;
+                    transition: all 0.3s ease;
+                }
+                div[data-testid="stTextInput"] input:focus {
+                    border-color: #A5B4FC !important;
+                    box-shadow: 0 0 25px rgba(165, 180, 252, 0.4) !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
                 if not gs["activo"]:
-                    hora_prog_str = st.text_input("Hora", value="", placeholder="Ingresa la hora de inicio (Ej: 14:00) o deja vacío para iniciar AHORA", label_visibility="collapsed")
+                    hora_prog_str = st.text_input("Hora", value="", placeholder="Escribe la hora (Ej: 14:00) o deja vacío para iniciar AHORA", label_visibility="collapsed")
                     st.markdown("<br>", unsafe_allow_html=True)
-                    if st.button(" AGENDAR / INICIAR EXAMEN", type="primary", use_container_width=True):
+                    if st.button("INICIAR / AGENDAR EXAMEN", type="primary", use_container_width=True):
                         try:
                             gs["activo"] = True
                             if not hora_prog_str.strip():
@@ -3079,32 +3172,41 @@ elif st.session_state.etapa_actual == "evaluacion":
                             st.rerun()
                         except ValueError:
                             gs["activo"] = False
-                            st.error("Por favor, usa el formato de 24 horas correcto (HH:MM). Ejemplo: 14:30")
+                            st.error("Formato incorrecto (usa HH:MM, Ej: 14:30)")
                 else:
                     ahora = datetime.datetime.now()
                     if ahora < gs["hora_inicio"]:
-                        st.info(f" Examen programado para las {gs['hora_inicio'].strftime('%H:%M:%S')}")
+                        st.info(f"Examen agendado para las {gs['hora_inicio'].strftime('%H:%M:%S')}")
                     else:
-                        st.success(f" Examen Activo. Iniciado a las {gs['hora_inicio'].strftime('%H:%M:%S')}")
+                        st.success(f"Examen Activo (Iniciado a las {gs['hora_inicio'].strftime('%H:%M:%S')})")
                         faltan = 1200 - (ahora - gs["hora_inicio"]).total_seconds()
                         if faltan > 0:
-                            st.info(f"Tiempo restante de la ventana: {int(faltan//60)} min {int(faltan%60)} seg")
+                            st.info(f"Tiempo restante: {int(faltan//60)}m {int(faltan%60)}s")
                         else:
-                            st.error("La ventana de 20 minutos ya expiró globalmente.")
+                            st.error("Ventana de 20 minutos expirada.")
                 
             with c2:
-                if st.button(" CERRAR / RESETEAR EXAMEN", use_container_width=True):
+                st.markdown("""
+                <div style='background: linear-gradient(145deg, rgba(69, 10, 10, 0.9), rgba(30, 10, 10, 0.9)); padding: 25px; border-radius: 12px; border: 1px solid rgba(239, 83, 80, 0.5); box-shadow: 0 0 20px rgba(239, 83, 80, 0.2); margin-bottom: 20px; text-align: center;'>
+                    <h3 style='color:#EF5350; margin:0 0 10px 0; font-weight:800; letter-spacing:1px;'>CIERRE DE EMERGENCIA</h3>
+                    <p style='color:#FCA5A5; font-size:0.95rem; margin:0;'>Forzar el cierre detendrá la evaluación global y reiniciará el reloj.</p>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("CERRAR Y RESETEAR EXAMEN", use_container_width=True):
                     gs["activo"] = False
                     gs["hora_inicio"] = None
                     st.rerun()
 
-            st.markdown("<hr style='border-color:rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
-            st.markdown("<h3 style='color:#E0E0E0;'>Estadísticas en Tiempo Real</h3>", unsafe_allow_html=True)
+            st.markdown("<br><hr style='border-color:rgba(255,255,255,0.05);'><br>", unsafe_allow_html=True)
+            
+            # --- ANALÍTICAS Y MÉTRICAS ---
+            st.markdown("<h3 style='color:#F8FAFC; margin-bottom:20px;'>Analíticas de Rendimiento</h3>", unsafe_allow_html=True)
             registros = gs["registros"]
             if not registros:
                 st.info("No hay estudiantes registrados o evaluaciones completadas todavía.")
             else:
                 aprobados = sum(1 for r in registros if r["nota"] >= 16)
+                reprobados = len(registros) - aprobados
                 tasa_aprobacion = (aprobados / len(registros)) * 100
                 tiempos = [r["tiempo"] for r in registros]
                 tiempo_promedio = sum(tiempos) / len(tiempos) if tiempos else 0
@@ -3115,19 +3217,112 @@ elif st.session_state.etapa_actual == "evaluacion":
                         fallos_totales[f] = fallos_totales.get(f, 0) + 1
                 pregunta_mas_fallada = max(fallos_totales, key=fallos_totales.get) if fallos_totales else "N/A"
                 
-                k1, k2, k3 = st.columns(3)
-                k1.metric("Índice de Aprobación (>80%)", f"{tasa_aprobacion:.1f}%", f"{aprobados}/{len(registros)} est.")
-                k2.metric("Tiempo Promedio", f"{tiempo_promedio:.0f} seg")
-                k3.metric("Índice Preg. Más Fallada", f"{pregunta_mas_fallada}")
+                # Tarjetas HTML
+                st.markdown(f"""
+                <div style='display:flex; gap:15px; margin-bottom:25px; flex-wrap:wrap;'>
+                    <div style='flex:1; min-width:200px; background:rgba(22,33,25,0.7); padding:20px; border-radius:10px; border-top:3px solid #4CAF50; text-align:center;'>
+                        <p style='margin:0; color:#94A3B8; font-size:0.9rem; font-weight:600; text-transform:uppercase;'>Tasa de Aprobación</p>
+                        <h2 style='margin:10px 0 0 0; color:#F8FAFC; font-size:2.5rem;'>{tasa_aprobacion:.1f}%</h2>
+                        <p style='margin:0; color:#64748B; font-size:0.85rem;'>{aprobados} de {len(registros)} aprobados</p>
+                    </div>
+                    <div style='flex:1; min-width:200px; background:rgba(22,33,25,0.7); padding:20px; border-radius:10px; border-top:3px solid #34D399; text-align:center;'>
+                        <p style='margin:0; color:#94A3B8; font-size:0.9rem; font-weight:600; text-transform:uppercase;'>Tiempo Promedio</p>
+                        <h2 style='margin:10px 0 0 0; color:#F8FAFC; font-size:2.5rem;'>{int(tiempo_promedio//60)}m {int(tiempo_promedio%60)}s</h2>
+                        <p style='margin:0; color:#64748B; font-size:0.85rem;'>Resolución por estudiante</p>
+                    </div>
+                    <div style='flex:1; min-width:200px; background:rgba(22,33,25,0.7); padding:20px; border-radius:10px; border-top:3px solid #EF5350; text-align:center;'>
+                        <p style='margin:0; color:#94A3B8; font-size:0.9rem; font-weight:600; text-transform:uppercase;'>Tema Crítico</p>
+                        <h2 style='margin:10px 0 0 0; color:#F8FAFC; font-size:1.5rem; word-break:break-word;'>Pregunta #{pregunta_mas_fallada}</h2>
+                        <p style='margin:0; color:#64748B; font-size:0.85rem;'>Ítem con más errores</p>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
                 
-                st.markdown("<br><h3 style='color:#E0E0E0;'>Ranking de Notas</h3>", unsafe_allow_html=True)
-                registros_ordenados = sorted(registros, key=lambda x: x["nota"], reverse=True)
-                
-                for i, r in enumerate(registros_ordenados):
-                    color = "#4CAF50" if r["nota"] >= 16 else "#EF5350"
-                    st.markdown(f"<div style='background:rgba(255,255,255,0.02); padding:10px; border-left:3px solid {color}; margin-bottom:5px;'>"
-                                f"<b>{i+1}. {r['nombre']}</b> ({r['carrera']} - {r['curso']}) | Nota: <span style='color:{color}; font-weight:bold;'>{r['nota']}/20</span> | Tiempo: {r['tiempo']}s"
-                                f"</div>", unsafe_allow_html=True)
+                # Gráficos de Plotly y Ranking
+                chart_col1, chart_col2 = st.columns([1, 1.5])
+                with chart_col1:
+                    st.markdown("<h4 style='color:#E2E8F0; margin-bottom:0;'>Distribución de Rendimiento</h4>", unsafe_allow_html=True)
+                    fig_pie = go.Figure(data=[go.Pie(labels=['Aprobados (≥16)', 'Reprobados (<16)'], 
+                                                     values=[aprobados, reprobados], 
+                                                     hole=.5,
+                                                     marker_colors=['#34D399', '#F87171'],
+                                                     textinfo='label+percent')])
+                    fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#E2E8F0'), showlegend=False, margin=dict(t=30, b=0, l=0, r=0), height=300)
+                    st.plotly_chart(fig_pie, use_container_width=True)
+                with chart_col2:
+                    import pandas as pd
+                    from collections import defaultdict
+
+                    st.markdown("<h4 style='color:#E2E8F0; margin-bottom:15px;'>Historial y Ranking por Día</h4>", unsafe_allow_html=True)
+                    
+                    df = pd.DataFrame(registros)
+                    if not df.empty:
+                        df_export = df.copy()
+                        if "key" in df_export.columns:
+                            df_export = df_export.drop(columns=["key"])
+                        if "fallos" in df_export.columns:
+                            df_export = df_export.drop(columns=["fallos"])
+                        
+                        if "timestamp" in df_export.columns:
+                            df_export["timestamp"] = df_export["timestamp"].apply(lambda x: str(x)[:10] if str(x) else x)
+                            df_export = df_export.rename(columns={"timestamp": "Fecha"})
+                            
+                        if "nota" in df_export.columns:
+                            df_export = df_export.rename(columns={"nota": "Nota (/20)"})
+                            
+                        if "tiempo" in df_export.columns:
+                            df_export["tiempo"] = df_export["tiempo"].apply(lambda x: f"{int(x // 60):02d}:{int(x % 60):02d}")
+                            df_export = df_export.rename(columns={"tiempo": "Tiempo (minutos)"})
+                            
+                        df_export.columns = [col.capitalize() if col not in ["Nota (/20)", "Tiempo (minutos)"] else col for col in df_export.columns]
+                        
+                        csv = df_export.to_csv(sep=';', encoding='utf-8-sig', index=False)
+                        st.download_button(
+                            label="Descargar Reporte (Excel CSV)",
+                            data=csv,
+                            file_name='reporte_calificaciones.csv',
+                            mime='text/csv',
+                        )
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        
+                        por_dia = defaultdict(list)
+                        for r in registros:
+                            dia = r.get("timestamp", "Desconocido")[:10] if "timestamp" in r else "Fecha Desconocida"
+                            por_dia[dia].append(r)
+                        
+                        for dia in sorted(por_dia.keys(), reverse=True):
+                            st.markdown(f"<h5 style='color:#94A3B8; border-bottom:1px solid #334155; padding-bottom:5px; margin-top:10px;'>Fecha: {dia}</h5>", unsafe_allow_html=True)
+                            registros_dia = sorted(por_dia[dia], key=lambda x: x["nota"], reverse=True)
+                            
+                            for i, r in enumerate(registros_dia):
+                                es_aprobado = r["nota"] >= 16
+                                color_fondo = "rgba(52, 211, 153, 0.1)" if es_aprobado else "rgba(248, 113, 113, 0.1)"
+                                color_borde = "#34D399" if es_aprobado else "#F87171"
+                                color_texto = "#6EE7B7" if es_aprobado else "#FCA5A5"
+                                
+                                medalla = ""
+                                if i == 0: medalla = "1er"
+                                elif i == 1: medalla = "2do"
+                                elif i == 2: medalla = "3er"
+                                else: medalla = f"<span style='color:#64748B; font-size:0.9rem; padding:0 5px;'>#{i+1}</span>"
+                                
+                                m = int(r["tiempo"] // 60)
+                                s = int(r["tiempo"] % 60)
+                                tiempo_str = f"{m:02d}:{s:02d}"
+                                
+                                st.markdown(f"""
+                                <div class='hover-jump' style='background:{color_fondo}; padding:12px 18px; border-radius:8px; border-left:4px solid {color_borde}; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;'>
+                                    <div>
+                                        <span style='font-size:1.1rem; font-weight:700; color:#94A3B8; margin-right:10px;'>{medalla}</span>
+                                        <span style='font-size:1.05rem; font-weight:600; color:#F8FAFC;'>{r.get('nombre', 'N/A')}</span>
+                                        <span style='color:#94A3B8; font-size:0.85rem; margin-left:8px;'>({r.get('carrera', 'N/A')} - {r.get('curso', 'N/A')})</span>
+                                    </div>
+                                    <div style='text-align:right;'>
+                                        <div style='font-size:1.15rem; font-weight:800; color:{color_texto};'>{r.get('nota', 0)}/20</div>
+                                        <div style='color:#94A3B8; font-size:0.8rem;'>Tiempo: {tiempo_str} min</div>
+                                    </div>
+                                </div>
+                                """, unsafe_allow_html=True)
                     
         else:
             gs = get_global_exam_state()
