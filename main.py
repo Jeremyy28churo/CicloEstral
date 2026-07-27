@@ -1,13 +1,9 @@
 import streamlit as st
-st.set_page_config(page_title="Ciclo Estral", layout="wide")
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 import json
-import sys, importlib
-if "evaluacion" in sys.modules:
-    importlib.reload(sys.modules["evaluacion"])
 from evaluacion import renderizar_evaluacion, BANCO_PREGUNTAS, get_global_exam_state
 
 import time
@@ -231,7 +227,7 @@ if 'seccion_activa' not in st.session_state:
   st.session_state.seccion_activa = st.query_params.get('seccion', 'Fases del Ciclo Estral')
 
 # Configuración de página
-st.set_page_config(page_title="Granja Digital - Fisiología Reproductiva", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Ciclo Estral", layout="wide", initial_sidebar_state="collapsed")
 
 # --- CUSTOM CSS (GLASSMORPHISM PRO THEME) ---
 st.markdown("""
@@ -1798,18 +1794,30 @@ def renderizar_simulador():
         )
         escenario = st.session_state.get("escenario_radio", "Ciclo Vacío (Sin Embrión - Actúa PGF2α)")
         pregnancy = "Gestación" in escenario
-    
+        
         if deshabilitar_gestacion:
-          st.info("ℹ **Nota:** Gestación deshabilitada para esta patología.")
-      
+          if complication == "Balance Energético Negativo (BEN)":
+            textos_ben = {
+                "Bovino": "El BEN en vacas de alta producción (lipomovilización) inhibe los pulsos de GnRH, causando anestro posparto. Sin onda folicular ovulatoria, no hay gestación.",
+                "Porcino": "En cerdas hiperprolíficas, el desgaste por lactación severa (BEN) detiene el crecimiento folicular, retrasando el estro post-destete y bloqueando la preñez.",
+                "Ovino": "Una condición corporal pobre por deficiencia nutricional (falta de flushing) frena la tasa ovulatoria a cero, haciendo imposible la gestación.",
+                "Caprino": "El déficit energético crítico en cabras lecheras paraliza el eje hipotálamo-hipófisis-gónada, deteniendo la ovulación y por ende la gestación.",
+                "Equino": "Las yeguas con pobre condición corporal entran en anestro nutricional; al no haber desarrollo de un folículo preovulatorio dominante, la fecundación es nula."
+            }
+            st.info(f"ℹ **Nota Fisiológica ({species}):** {textos_ben.get(species, '')}")
+            
+          elif complication == "Cuerpo Lúteo Persistente":
+            textos_cl = {
+                "Bovino": "Una falla uterina (ej. piómetra) impide la liberación de PGF2α endometrial. El CL sobrevive y secreta progesterona, simulando una falsa gestación sin embrión.",
+                "Caprino": "La retención del CL frecuentemente desencadena hidrómetra (pseudogestación caprina), acumulando fluido estéril con progesterona alta pero sin feto.",
+                "Equino": "Fallas en la secreción de PGF2α en el diestro tardío prolongan la vida del CL. La yegua queda en anestro prolongado sin estar preñada."
+            }
+            st.info(f"ℹ **Nota Fisiológica ({species}):** {textos_cl.get(species, '')}")
+
     # Caso Especial: Estrés Calórico + Gestación Activa (solo mamíferos)
     if species != "Ave" and complication == "Estrés Calórico" and pregnancy:
       st.error("** Alerta de Impacto Económico (Mortalidad Embrionaria Temprana):** El estrés por calor severo en zonas tropicales incrementa la temperatura uterina, deprime la viabilidad del embrión y bloquea su señal de reconocimiento antes del día 15. Esto genera una reabsorción embrionaria silenciosa, provocando el retorno de la hembra al celo. Pérdidas directas de $3.00 USD por día abierto adicional por animal.")
       
-    # Mensaje informativo si se omite CL Persistente (solo mamíferos no-bovinos relevantes)
-    if species in ["Porcino", "Ovino"]:
-      st.info(f"ℹ **Nota Clínica:** El 'Cuerpo Lúteo Persistente' no es una patología comúnmente diagnosticada ni representativa en {species.lower()}s. Ha sido deshabilitada para esta especie.")
-    
     # ========== PANELES AGROPECUARIOS DINÁMICOS DE PATOLOGÍAS ==========
     if species == "Ave":
       # --- Paneles exclusivos para Ave ---
