@@ -973,7 +973,6 @@ def renderizar_evaluacion():
 
         # --- Temporizador Javascript Flotante ---
         import streamlit.components.v1 as components
-        st.markdown(f"**Usuario:** {nombre_estudiante} | **Carrera:** {carrera_estudiante}")
         end_time = st.session_state.get("eval_global_end_time")
         if end_time:
             remaining = max(0, (end_time - datetime.datetime.now()).total_seconds())
