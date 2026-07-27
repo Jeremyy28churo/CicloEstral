@@ -1199,12 +1199,33 @@ def renderizar_evaluacion():
         with col_b:
             if st.button(texto_boton, use_container_width=True, key=f"btn_sig_{idx}"):
                 completo = False
-                if q["tipo"] == "opcion_multiple" and st.session_state.eval_seleccion_actual is not None:
+                if q["tipo"] == "opcion_multiple":
+                    val = st.session_state.get(f"radio_q_{idx}")
+                    if val is not None:
+                        st.session_state.eval_seleccion_actual = q["opciones"].index(val)
+                        completo = True
+                elif q["tipo"] == "emparejar":
+                    selecciones = {}
                     completo = True
-                elif q["tipo"] == "emparejar" and isinstance(st.session_state.eval_seleccion_actual, dict) and len(st.session_state.eval_seleccion_actual) == len(q["pares"]):
+                    for par in q["pares"]:
+                        val = st.session_state.get(f"emp_q_{idx}_{par}")
+                        if val == "Seleccionar..." or not val:
+                            completo = False
+                            break
+                        selecciones[par] = val
+                    if completo:
+                        st.session_state.eval_seleccion_actual = selecciones
+                elif q["tipo"] == "completar_espacios":
+                    selecciones = {}
                     completo = True
-                elif q["tipo"] == "completar_espacios" and isinstance(st.session_state.eval_seleccion_actual, dict) and len(st.session_state.eval_seleccion_actual) == len(q["opciones"]):
-                    completo = True
+                    for esp_num in q["opciones"].keys():
+                        val = st.session_state.get(f"comp_q_{idx}_{esp_num}")
+                        if val == "Seleccionar..." or not val:
+                            completo = False
+                            break
+                        selecciones[esp_num] = val
+                    if completo:
+                        st.session_state.eval_seleccion_actual = selecciones
 
                 if not completo:
                     # Bloquear avance sin seleccion
