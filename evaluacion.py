@@ -973,7 +973,7 @@ def renderizar_evaluacion():
 
         # --- Temporizador Javascript Flotante ---
         import streamlit.components.v1 as components
-        import datetime
+        st.markdown(f"**Usuario:** {nombre_estudiante} | **Carrera:** {carrera_estudiante}")
         end_time = st.session_state.get("eval_global_end_time")
         if end_time:
             remaining = max(0, (end_time - datetime.datetime.now()).total_seconds())
@@ -1222,7 +1222,7 @@ def renderizar_evaluacion():
         
         # GUARDAR EN ESTADO GLOBAL SOLO UNA VEZ
         if not st.session_state.get("eval_guardado_global", False):
-            import sys, datetime
+            import sys
             # Soporte de namespace al importar
             gs = get_global_exam_state()
             estudiante = st.session_state.get("eval_estudiante", {})
