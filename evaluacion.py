@@ -7,13 +7,30 @@ import random
 import streamlit as st
 import datetime
 
+import json
+import os
+
 @st.cache_resource
 def get_global_exam_state():
-    return {
+    state = {
         "activo": False,
         "hora_inicio": None,
         "registros": []
     }
+    if os.path.exists("evaluaciones_registros.json"):
+        try:
+            with open("evaluaciones_registros.json", "r", encoding="utf-8") as f:
+                state["registros"] = json.load(f)
+        except Exception:
+            pass
+    return state
+
+def save_global_exam_state(state):
+    try:
+        with open("evaluaciones_registros.json", "w", encoding="utf-8") as f:
+            json.dump(state["registros"], f, ensure_ascii=False, indent=4)
+    except Exception:
+        pass
 
 # =============================================================================
 # BANCO DE 50 PREGUNTAS DE OPCION MULTIPLE
@@ -936,15 +953,18 @@ def renderizar_evaluacion():
         """, height=0)
         
         st.markdown("""
-        <div style='background: rgba(255,255,255,0.03); padding:24px 30px;
-                    border-radius:12px; border:1px solid rgba(255,255,255,0.07);
-                    margin-bottom:24px;'>
-            <h4 style='color:#E8F5E9; margin:0 0 12px 0; font-weight:600;'>Instrucciones del Examen</h4>
-            <ul style='color:#B0BEC5; font-size:0.92rem; line-height:1.9; margin:0; padding-left:20px;'>
-                <li>Se seleccionaran <b style="color:#4CAF50;">20 preguntas aleatorias</b> del banco de 50 preguntas.</li>
-                <li>Las preguntas se presentaran <b style="color:#4CAF50;">una por una</b>. No podra retroceder a preguntas anteriores.</li>
-                <li>Cada pregunta tiene <b style="color:#4CAF50;">4 opciones de respuesta</b>, de las cuales una es correcta.</li>
-                <li>Para aprobar se requiere un minimo de <b style="color:#4CAF50;">16 respuestas correctas (80%).</b></li>
+        <div style='background: linear-gradient(135deg, rgba(22,33,25,0.7), rgba(10,18,12,0.9)); 
+                    padding:35px 40px; border-radius:16px; border:1px solid rgba(76, 175, 80, 0.3);
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.5); margin-bottom:30px; position: relative; overflow: hidden;'>
+            <div style='position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(76,175,80,0.05) 0%, transparent 60%); pointer-events:none;'></div>
+            <h3 style='color:#F8FAFC; margin:0 0 20px 0; font-weight:700; font-size:1.6rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:15px; display:flex; align-items:center;'>
+                Reglamento de la Evaluación
+            </h3>
+            <ul style='color:#CBD5E1; font-size:1.05rem; line-height:2.2; margin:0; padding-left:25px; list-style-type: square;'>
+                <li>El examen consta de <b style="color:#4CAF50;">20 preguntas de opción múltiple y emparejamiento</b>.</li>
+                <li>Las preguntas se presentan <b style="color:#4CAF50;">una por una</b>. No es posible retroceder a modificar respuestas.</li>
+                <li>El límite de tiempo (20 minutos) es estrictamente medido y validado por el servidor.</li>
+                <li>Para aprobar con éxito se requiere un mínimo de <b style="color:#34D399;">16 respuestas correctas (Nota mínima: 16/20).</b></li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -990,15 +1010,15 @@ def renderizar_evaluacion():
                     timerDiv.style.top = '25px';
                     timerDiv.style.right = '35px';
                     timerDiv.style.zIndex = '999999';
-                    timerDiv.style.backgroundColor = 'rgba(18, 25, 20, 0.95)';
-                    timerDiv.style.border = '1px solid rgba(76, 175, 80, 0.3)';
+                    timerDiv.style.backgroundColor = 'rgba(25, 15, 15, 0.95)';
+                    timerDiv.style.border = '1px solid rgba(239, 83, 80, 0.5)';
                     timerDiv.style.borderRadius = '8px';
                     timerDiv.style.padding = '8px 18px';
-                    timerDiv.style.color = '#4CAF50';
+                    timerDiv.style.color = '#EF5350';
                     timerDiv.style.fontFamily = '"Inter", sans-serif';
                     timerDiv.style.fontSize = '1.3rem';
                     timerDiv.style.fontWeight = '800';
-                    timerDiv.style.boxShadow = '0 6px 20px rgba(0,0,0,0.5)';
+                    timerDiv.style.boxShadow = '0 6px 25px rgba(239, 83, 80, 0.3)';
                     timerDiv.style.backdropFilter = 'blur(10px)';
                     timerDiv.style.display = 'flex';
                     timerDiv.style.alignItems = 'center';
@@ -1040,10 +1060,15 @@ def renderizar_evaluacion():
         # --- Barra de progreso ---
         progreso = idx / total
         st.markdown(f"""
-        <div style='margin-bottom:6px; display:flex; justify-content:space-between;
-                    font-size:0.82rem; color:#90A4AE;'>
-            <span>Pregunta {num} de {total}</span>
-            <span>{idx} respondidas &mdash; {total - idx} restantes</span>
+        <style>
+            [data-testid="stProgress"] > div > div > div > div {{
+                background-color: #EF5350 !important;
+            }}
+        </style>
+        <div style='margin-bottom:10px; display:flex; justify-content:space-between;
+                    font-size:0.9rem; color:#94A3B8; font-weight:600; text-transform:uppercase; letter-spacing:1px;'>
+            <span style='color:#EF5350;'>Pregunta {num} de {total}</span>
+            <span>{idx} completadas / {total - idx} pendientes</span>
         </div>
         """, unsafe_allow_html=True)
         st.progress(progreso)
@@ -1051,11 +1076,13 @@ def renderizar_evaluacion():
 
         # --- Enunciado de la pregunta ---
         st.markdown(f"""
-        <div style='background: linear-gradient(145deg, rgba(30,41,35,0.8), rgba(20,28,24,0.9));
-                    border-left: 5px solid #4CAF50; padding: 24px 30px; border-radius: 12px;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.3); margin-bottom: 28px; backdrop-filter: blur(10px);'>
-            <h3 style='margin:0; color:#E8F5E9; font-size:1.25rem; font-weight:600; line-height:1.6;'>
-                <span style='color:#4CAF50; font-size:1.4rem; margin-right:8px;'>{num}.</span> {q["pregunta"]}
+        <div style='background: linear-gradient(145deg, rgba(25,15,15,0.8), rgba(18,10,10,0.9));
+                    border: 1px solid rgba(239, 83, 80, 0.4); border-left: 6px solid #EF5350;
+                    padding: 30px 35px; border-radius: 16px;
+                    box-shadow: 0 0 25px rgba(239, 83, 80, 0.2); margin-bottom: 30px; backdrop-filter: blur(15px); position:relative; overflow:hidden;'>
+            <div style='position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(239,83,80,0.15) 0%, transparent 70%); border-radius:50%;'></div>
+            <h3 style='margin:0; color:#F8FAFC; font-size:1.35rem; font-weight:600; line-height:1.7; position:relative; z-index:2;'>
+                <span style='color:#EF5350; font-size:1.6rem; font-weight:800; margin-right:12px; display:inline-block; transform:translateY(2px);'>{num}.</span> {q["pregunta"]}
             </h3>
         </div>
         """, unsafe_allow_html=True)
