@@ -3,3 +3,4 @@ pandas
 numpy
 plotly
 st-clickable-images
+st-gsheets-connection
