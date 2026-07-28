@@ -2822,11 +2822,10 @@ elif st.session_state.etapa_actual == "evaluacion":
         st.session_state.eval_vista = "practica"
         st.rerun()
 
-  # CSS Premium solo para MODO PRACTICA (Banco de Preguntas)
-  if st.session_state.get("eval_vista") == "practica":
-      st.markdown("""
-        <style>
-          .stRadio div[role="radiogroup"] { gap: 14px; }
+  # CSS Premium para MODO PRACTICA y EVALUACION
+  st.markdown("""
+    <style>
+      .stRadio div[role="radiogroup"] { gap: 14px; }
           .stRadio div[role="radiogroup"] > label {
               background: rgba(255, 255, 255, 0.03);
               border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3160,17 +3159,29 @@ elif st.session_state.etapa_actual == "evaluacion":
                 </style>
                 """, unsafe_allow_html=True)
                 if not gs["activo"]:
-                    hora_prog_str = st.text_input("Hora", value="", placeholder="Escribe la hora (Ej: 14:00) o deja vacío para iniciar AHORA", label_visibility="collapsed")
+                    c_ini, c_fin = st.columns(2)
+                    with c_ini:
+                        hora_prog_str = st.text_input("Inicio", value="", placeholder="Ingrese la hora de Inicio")
+                    with c_fin:
+                        hora_fin_str = st.text_input("Fin", value="", placeholder="Ingrese la hora de fin")
                     st.markdown("<br>", unsafe_allow_html=True)
                     if st.button("INICIAR / AGENDAR EXAMEN", type="primary", use_container_width=True):
                         try:
                             gs["activo"] = True
+                            hoy = datetime.datetime.now().date()
                             if not hora_prog_str.strip():
                                 gs["hora_inicio"] = datetime.datetime.now()
                             else:
                                 hora_prog = datetime.datetime.strptime(hora_prog_str.strip(), "%H:%M").time()
-                                hoy = datetime.datetime.now().date()
                                 gs["hora_inicio"] = datetime.datetime.combine(hoy, hora_prog)
+                            
+                            if not hora_fin_str.strip():
+                                gs["hora_fin"] = gs["hora_inicio"] + datetime.timedelta(minutes=20)
+                            else:
+                                h_fin = datetime.datetime.strptime(hora_fin_str.strip(), "%H:%M").time()
+                                gs["hora_fin"] = datetime.datetime.combine(hoy, h_fin)
+                                if gs["hora_fin"] <= gs["hora_inicio"]:
+                                    gs["hora_fin"] += datetime.timedelta(days=1)
                             st.rerun()
                         except ValueError:
                             gs["activo"] = False
@@ -3180,12 +3191,13 @@ elif st.session_state.etapa_actual == "evaluacion":
                     if ahora < gs["hora_inicio"]:
                         st.info(f"Examen agendado para las {gs['hora_inicio'].strftime('%H:%M:%S')}")
                     else:
-                        st.success(f"Examen Activo (Iniciado a las {gs['hora_inicio'].strftime('%H:%M:%S')})")
-                        faltan = 1200 - (ahora - gs["hora_inicio"]).total_seconds()
+                        hora_fin = gs.get("hora_fin", gs["hora_inicio"] + datetime.timedelta(minutes=20))
+                        st.success(f"Examen Activo (Apertura: {gs['hora_inicio'].strftime('%H:%M')} | Cierre: {hora_fin.strftime('%H:%M')})")
+                        faltan = (hora_fin - ahora).total_seconds()
                         if faltan > 0:
-                            st.info(f"Tiempo restante: {int(faltan//60)}m {int(faltan%60)}s")
+                            st.info(f"Tiempo restante: {int(faltan//3600)}h {int((faltan%3600)//60)}m {int(faltan%60)}s")
                         else:
-                            st.error("Ventana de 20 minutos expirada.")
+                            st.error("Ventana de evaluación expirada.")
                 
             with c2:
                 st.markdown("""
@@ -3346,10 +3358,10 @@ elif st.session_state.etapa_actual == "evaluacion":
                 st.info(f" La evaluación está agendada para las {gs['hora_inicio'].strftime('%H:%M:%S')}. Por favor, espera.")
                 if st.button("Actualizar Estado"):
                     st.rerun()
-            elif gs["hora_inicio"] and (ahora - gs["hora_inicio"]).total_seconds() > 1200:
-                st.error("La ventana global de 20 minutos ha expirado. Evaluación Cerrada definitivamente para este turno.")
+            elif gs["hora_inicio"] and ahora >= gs.get("hora_fin", gs["hora_inicio"] + datetime.timedelta(minutes=20)):
+                st.error("La ventana global de evaluación ha expirado. Evaluación cerrada para este turno.")
             else:
-                st.session_state.eval_global_end_time = gs["hora_inicio"] + datetime.timedelta(minutes=20)
+                st.session_state.eval_global_end_time = gs.get("hora_fin", gs["hora_inicio"] + datetime.timedelta(minutes=20))
                 renderizar_evaluacion()
 
 # --- SINCRONIZACIÓN DE ESTADO CON URL (PERSISTENCIA AL REFRESCAR) ---
