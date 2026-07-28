@@ -3168,9 +3168,9 @@ elif st.session_state.etapa_actual == "evaluacion":
                     if st.button("INICIAR / AGENDAR EXAMEN", type="primary", use_container_width=True):
                         try:
                             gs["activo"] = True
-                            hoy = datetime.datetime.now().date()
+                            hoy = (datetime.datetime.utcnow() - datetime.timedelta(hours=5)).date()
                             if not hora_prog_str.strip():
-                                gs["hora_inicio"] = datetime.datetime.now()
+                                gs["hora_inicio"] = (datetime.datetime.utcnow() - datetime.timedelta(hours=5))
                             else:
                                 hora_prog = datetime.datetime.strptime(hora_prog_str.strip(), "%H:%M").time()
                                 gs["hora_inicio"] = datetime.datetime.combine(hoy, hora_prog)
@@ -3187,7 +3187,7 @@ elif st.session_state.etapa_actual == "evaluacion":
                             gs["activo"] = False
                             st.error("Formato incorrecto (usa HH:MM, Ej: 14:30)")
                 else:
-                    ahora = datetime.datetime.now()
+                    ahora = (datetime.datetime.utcnow() - datetime.timedelta(hours=5))
                     if ahora < gs["hora_inicio"]:
                         st.info(f"Examen agendado para las {gs['hora_inicio'].strftime('%H:%M:%S')}")
                     else:
@@ -3340,7 +3340,7 @@ elif st.session_state.etapa_actual == "evaluacion":
                     
         else:
             gs = get_global_exam_state()
-            ahora = datetime.datetime.now()
+            ahora = (datetime.datetime.utcnow() - datetime.timedelta(hours=5))
             
             est = st.session_state.eval_estudiante
             estudiante_key = f"{est['nombre']}_{est['carrera']}_{est['curso']}"
