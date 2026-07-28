@@ -1705,14 +1705,42 @@ def renderizar_simulador():
                 st.markdown("<div style='display:inline-block; background:rgba(var(--color-rgb),0.1); border:1px solid rgba(var(--color-rgb),0.4); color:var(--color-hex); padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:bold; letter-spacing:1px; margin-bottom:8px; box-shadow: 0 0 8px rgba(var(--color-rgb),0.2);'>TAMAÑO DE LOTE</div>", unsafe_allow_html=True)
                 hato_size = st.number_input("Tamaño del Hato / Lote:", min_value=1, max_value=100000, value=100, step=10, label_visibility="collapsed")
                 
-            perdida_total = data_esp["roi_base"] * hato_size
+            estrategia_actual = st.session_state.temp_estrategia_select
+            import re
+            match = re.search(r'~(\d+)(?:-(\d+))?%', estrategia_actual)
+            exito = 100.0
+            if match:
+                if match.group(2):
+                    exito = (float(match.group(1)) + float(match.group(2))) / 2.0
+                else:
+                    exito = float(match.group(1))
+            
+            tasa_falla = (100.0 - exito) / 100.0
+            animales_afectados = hato_size * tasa_falla
+            perdida_maxima = hato_size * data_esp["roi_base"]
+            perdida_estimada = animales_afectados * data_esp["roi_base"]
+            ahorro_proyectado = perdida_maxima - perdida_estimada
             
             st.markdown(f"""
             <div class="hover-jump-red" style="background: rgba(231, 29, 54, 0.05); border: 1px solid rgba(231, 29, 54, 0.3); border-left: 4px solid #E71D36; padding: 15px; border-radius: 6px; margin-top: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="background-color: #E71D36; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">IMPACTO ECONÓMICO</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="background-color: #E71D36; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px;">IMPACTO ECONÓMICO</span>
+                    <span style="color: #E71D36; font-size: 0.85rem; font-weight: bold;">Falla Est.: {tasa_falla*100:.1f}% ({int(animales_afectados)} animales)</span>
                 </div>
-                <h3 style="color: #E71D36; margin: 10px 0 5px 0; font-size: 1.5rem;">Pérdida Potencial: ${perdida_total:,.2f} USD</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #A0AEC0; font-size: 0.95rem;">Pérdida Máxima del Lote:</span>
+                        <span style="color: #FC8181; font-weight: bold; font-size: 1.1rem;">${perdida_maxima:,.2f} USD</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                        <span style="color: #A0AEC0; font-size: 0.95rem;">Ahorro Proyectado (Estrategia):</span>
+                        <span style="color: #69F0AE; font-weight: bold; font-size: 1.1rem;">+ ${ahorro_proyectado:,.2f} USD</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                        <span style="color: #E2E8F0; font-weight: 900; font-size: 1.1rem;">Pérdida Estimada Real:</span>
+                        <span style="color: #E71D36; font-weight: 900; font-size: 1.4rem;">${perdida_estimada:,.2f} USD</span>
+                    </div>
+                </div>
                 <p style="font-size: 0.85rem; color: #A0AEC0; margin-bottom: 0;">
                     <strong style="color: #FC8181;">Costo Base: ${data_esp['roi_base']} USD/animal</strong> por falla técnica/reproductiva.<br>
                     <span style="color: #E2E8F0; font-weight: bold;">{data_esp.get('desglose_perdidas', '')}</span>
