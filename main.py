@@ -4,6 +4,9 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 import json
+import importlib
+import evaluacion
+importlib.reload(evaluacion)
 from evaluacion import renderizar_evaluacion, BANCO_PREGUNTAS, get_global_exam_state
 
 import time
@@ -11,6 +14,7 @@ import datetime
 import base64
 import os
 
+@st.cache_data(show_spinner=False)
 def get_image_base64(ruta_local):
     if not os.path.exists(ruta_local):
         return ""
@@ -980,6 +984,7 @@ TIMELINE_DATA = {
 }
 
 @st.cache_data
+@st.cache_data(show_spinner=False)
 def generate_hormone_data(species, complication="Normal", pregnancy=False):
   data = SPECIES_DATA[species]
   days = data["cycle_duration"]
@@ -2001,6 +2006,10 @@ def renderizar_simulador():
     border-radius: 16px;
     padding: 18px;
     border: 1px solid rgba(255,255,255,0.07);
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }}
 
   /*  Fila 1: controles  */
@@ -2070,8 +2079,7 @@ def renderizar_simulador():
   .kpi-lbl {{ font-size:12px; color:#8b949e; display:block; margin-bottom:6px; }}
   .kpi-val {{ font-size:26px; font-weight:800; }}
 
-  /*  Fila 4: gráfica  */
-  #chart {{ width:100%; height:400px; }}
+  #chart {{ width:100%; max-width: 100vw; height:450px; box-sizing: border-box; }}
 </style>
 </head>
 <body>
@@ -2117,10 +2125,11 @@ def renderizar_simulador():
 
   /*  Inicializar Plotly con base vacía  */
   const layout = {{
+    autosize: true,
     paper_bgcolor:'rgba(0,0,0,0)',
     plot_bgcolor:'rgba(0,0,0,0)',
     font:{{ color:'#ccc', family:'Inter,sans-serif' }},
-    margin:{{ l:50, r:15, t:40, b:50 }},
+    margin:{{ l:35, r:5, t:40, b:50 }},
     height:450,
     showlegend: false,
     xaxis:{{ title:D.xAxisLbl, range:[0,maxDays], color:'#aaa',
@@ -2323,7 +2332,7 @@ def renderizar_simulador():
 """
 
     import streamlit.components.v1 as _components
-    _components.html(sim_html, height=800, scrolling=False)
+    _components.html(sim_html, height=900, scrolling=False)
 
 
 if st.session_state.etapa_actual == "portada":
@@ -2573,6 +2582,7 @@ elif st.session_state.etapa_actual == "seleccion":
   from st_clickable_images import clickable_images
 
   @st.cache_data
+  @st.cache_data(show_spinner=False)
   def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
       data = f.read()
@@ -2812,56 +2822,74 @@ elif st.session_state.etapa_actual == "evaluacion":
         st.session_state.eval_vista = "practica"
         st.rerun()
 
-  # CSS Premium para Radio Buttons y Evaluación
-  st.markdown("""
-    <style>
-      .stRadio div[role="radiogroup"] { gap: 14px; }
-      .stRadio div[role="radiogroup"] > label {
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 12px;
-          padding: 16px 22px;
-          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-          cursor: pointer;
-          margin: 0;
-      }
-      .stRadio div[role="radiogroup"] > label:hover {
-          background: rgba(239, 83, 80, 0.08);
-          border-color: rgba(239, 83, 80, 0.4);
-          transform: translateY(-3px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-      }
-      .stRadio div[role="radiogroup"] > label:has(input:checked) {
-          background: rgba(76, 175, 80, 0.15) !important;
-          border-color: #4CAF50 !important;
-          box-shadow: 0 0 0 1px #4CAF50, 0 6px 20px rgba(76,175,80,0.25) !important;
-      }
-      .stRadio div[role="radiogroup"] > label p {
-          font-size: 1.05rem !important;
-          color: #E0E0E0 !important;
-          font-weight: 500;
-          margin: 0 !important;
-      }
-      .stRadio div[role="radiogroup"] > label:has(input:checked) p {
-          color: #4CAF50 !important;
-          font-weight: 700;
-      }
-      /* Ocultar el círculo nativo */
-      .stRadio div[role="radiogroup"] > label > div:first-child { display: none; }
-      /* Forzar borde rojo para botón de volver al inicio u otros */
-      div.stButton > button { border-left-color: #EF5350 !important; }
-    </style>
-  """, unsafe_allow_html=True)
+  # CSS Premium solo para MODO PRACTICA (Banco de Preguntas)
+  if st.session_state.get("eval_vista") == "practica":
+      st.markdown("""
+        <style>
+          .stRadio div[role="radiogroup"] { gap: 14px; }
+          .stRadio div[role="radiogroup"] > label {
+              background: rgba(255, 255, 255, 0.03);
+              border: 1px solid rgba(255, 255, 255, 0.1);
+              border-radius: 12px;
+              padding: 16px 22px;
+              transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+              cursor: pointer;
+              margin: 0;
+          }
+          .stRadio div[role="radiogroup"] > label:hover {
+              background: rgba(239, 83, 80, 0.08);
+              border-color: rgba(239, 83, 80, 0.4);
+              transform: translateY(-3px);
+              box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+          }
+          .stRadio div[role="radiogroup"] > label:has(input:checked) {
+              background: rgba(76, 175, 80, 0.15) !important;
+              border-color: #4CAF50 !important;
+              box-shadow: 0 0 0 1px #4CAF50, 0 6px 20px rgba(76,175,80,0.25) !important;
+          }
+          .stRadio div[role="radiogroup"] > label p {
+              font-size: 1.05rem !important;
+              color: #E0E0E0 !important;
+              font-weight: 500;
+              margin: 0 !important;
+          }
+          .stRadio div[role="radiogroup"] > label:has(input:checked) p {
+              color: #4CAF50 !important;
+              font-weight: 700;
+          }
+          /* Ocultar el círculo nativo */
+          .stRadio div[role="radiogroup"] > label > div:first-child { display: none; }
+          /* Forzar borde rojo para botón de volver al inicio u otros */
+          div.stButton > button { border-left-color: #EF5350 !important; }
+        </style>
+      """, unsafe_allow_html=True)
 
   # Cabecera del módulo
-  fase_actual = st.session_state.get("eval_fase", "")
-  
   render_header = st.session_state.get("eval_estudiante", {}).get("rol", "") != "admin"
   if render_header:
-      if fase_actual == "activo":
+      if st.session_state.get("eval_vista") == "practica":
+          # Diseño sobrio y academico para MODO PRACTICA (Banco de Preguntas)
+          st.markdown(
+            f"<div style='background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 1)); padding:28px 36px; border-radius:14px; border-left: 5px solid #3B82F6; border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin-bottom:28px;'>"
+            f"  <div style='position:relative; z-index:10;'>"
+            f"    <h2 style='margin:0 0 6px 0; color:#F8FAFC; font-weight:800; letter-spacing:1px;'>MODULO DE EVALUACIÓN (PRÁCTICA)</h2>"
+            f"    <p style='margin:0; color:#94A3B8; font-size:0.95rem; font-weight: 500;'>Ciclo Estral Comparado - Fisiología Animal Aplicada</p>"
+            f"  </div>"
+            f"</div>",
+            unsafe_allow_html=True
+          )
+      else:
           # Diseño de Electrocardiograma para EVALUACION REAL (vida o muerte)
-          color_latido = "#EF5350"
-          velocidad_corazon = "0.35s"
+          fase_actual = st.session_state.get("eval_fase", "")
+          if fase_actual == "activo":
+              color_latido = "#EF5350"
+              velocidad_corazon = "0.35s"
+              velocidad_linea = "1.2s"
+          else:
+              color_latido = "#E57373"
+              velocidad_corazon = "2.8s"
+              velocidad_linea = "5.0s"
+              
           path_points = ["M 0 60"]
           x = 0
           for _ in range(7):
@@ -2875,9 +2903,9 @@ elif st.session_state.etapa_actual == "evaluacion":
             f"@keyframes heartbeat {{ 0% {{ transform: scale(1); }} 15% {{ transform: scale(1.15); }} 30% {{ transform: scale(1); }} 45% {{ transform: scale(1.15); }} 70% {{ transform: scale(1); }} 100% {{ transform: scale(1); }} }}"
             f"@keyframes drawSweepActive {{ 0% {{ stroke-dashoffset: 3500; opacity: 1; }} 75% {{ stroke-dashoffset: 0; opacity: 1; }} 90% {{ stroke-dashoffset: 0; opacity: 0; }} 95% {{ stroke-dashoffset: 3500; opacity: 0; }} 100% {{ stroke-dashoffset: 3500; opacity: 1; }} }}"
             f"</style>"
-            f"<div style='background:linear-gradient(135deg,rgba(18,18,18,0.9),rgba(8,8,8,0.95)); padding:28px 36px; border-radius:14px; border-top:4px solid #EF5350; border:1px solid rgba(239,83,80,0.5); box-shadow: 0 0 25px rgba(239,83,80,0.4); margin-bottom:28px; position:relative; overflow:hidden;'>"
+            f"<div style='background:linear-gradient(135deg,rgba(18,18,18,0.9),rgba(8,8,8,0.95)); padding:28px 36px; border-radius:14px; border-top:4px solid {color_latido}; border:1px solid rgba(239,83,80,0.5); box-shadow: 0 0 25px rgba(239,83,80,0.4); margin-bottom:28px; position:relative; overflow:hidden;'>"
             f"  <svg width='100%' height='100%' viewBox=\"0 0 1000 120\" preserveAspectRatio=\"none\" style='position:absolute; top:0; left:0; z-index:0; opacity: 0.35;'>"
-            f"    <path d='{path_d_active}' fill='none' stroke='{color_latido}' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' style='stroke-dasharray: 3500; stroke-dashoffset: 3500; animation: drawSweepActive 1.2s infinite;'/>"
+            f"    <path d='{path_d_active}' fill='none' stroke='{color_latido}' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' style='stroke-dasharray: 3500; stroke-dashoffset: 3500; animation: drawSweepActive {velocidad_linea} infinite;'/>"
             f"  </svg>"
             f"  <svg width='80' height='80' viewBox='0 0 100 100' style='position:absolute; top:50%; right:20px; transform:translateY(-50%); z-index:5; filter: drop-shadow(0px 0px 15px {color_latido}); animation: heartbeat {velocidad_corazon} infinite;'>"
             f"    <g fill='{color_latido}' stroke='{color_latido}' stroke-width='2' stroke-linejoin='round'>"
@@ -2890,17 +2918,6 @@ elif st.session_state.etapa_actual == "evaluacion":
             f"  <div style='position:relative; z-index:10; pointer-events:none;'>"
             f"    <h2 style='margin:0 0 6px 0;color:#FFCDD2;font-weight:900;letter-spacing:1.5px; text-shadow: 0 0 12px rgba(239,83,80,0.8);'>MODULO DE EVALUACIÓN</h2>"
             f"    <p style='margin:0;color:#E2E8F0;font-size:0.95rem; font-weight: 500;'>Ciclo Estral Comparado - Fisiología Animal Aplicada</p>"
-            f"  </div>"
-            f"</div>",
-            unsafe_allow_html=True
-          )
-      else:
-          # Diseño sobrio y academico para MODO PRACTICA (Banco de Preguntas)
-          st.markdown(
-            f"<div style='background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 1)); padding:28px 36px; border-radius:14px; border-left: 5px solid #3B82F6; border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin-bottom:28px;'>"
-            f"  <div style='position:relative; z-index:10;'>"
-            f"    <h2 style='margin:0 0 6px 0; color:#F8FAFC; font-weight:800; letter-spacing:1px;'>MODULO DE EVALUACIÓN (PRÁCTICA)</h2>"
-            f"    <p style='margin:0; color:#94A3B8; font-size:0.95rem; font-weight: 500;'>Ciclo Estral Comparado - Fisiología Animal Aplicada</p>"
             f"  </div>"
             f"</div>",
             unsafe_allow_html=True
