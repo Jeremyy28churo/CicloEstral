@@ -6,6 +6,8 @@ Lenguaje academico formal. Sin emojis. Termino taxonomico: Equino.
 import random
 import streamlit as st
 import datetime
+import pandas as pd
+from streamlit_gsheets import GSheetsConnection
 
 import json
 import os
@@ -1191,34 +1193,44 @@ def renderizar_evaluacion():
                 if st.session_state.eval_respuestas.get(i) != p["correcta"]:
                     fallos.append(i + 1)
             
+            gs = get_global_exam_state()
+            duracion_total = 1200
+            if gs.get("hora_inicio") and gs.get("hora_fin"):
+                duracion_total = (gs["hora_fin"] - gs["hora_inicio"]).total_seconds()
+                
             end_time = st.session_state.get("eval_global_end_time", datetime.datetime.now())
-            tiempo_tardado = 1200 - max(0, (end_time - datetime.datetime.now()).total_seconds())
+            tiempo_tardado = duracion_total - max(0, (end_time - datetime.datetime.now()).total_seconds())
             
+            tiempo_minutos = round(tiempo_tardado / 60, 2)
             registro = {
                 "key": est_key,
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "nombre": nombre,
                 "carrera": carrera,
                 "curso": curso,
-                "nota": puntaje,
-                "fallos": fallos,
-                "tiempo": round(tiempo_tardado, 1)
+                "nota": f"{puntaje}/20",
+                "tiempo": f"{tiempo_minutos} min"
             }
             if "registros" in gs:
                 gs["registros"].append(registro)
             st.session_state.eval_guardado_global = True
             
-            # --- INTEGRACIÓN GOOGLE SHEETS (Descomentar al configurar secrets.toml) ---
-            # from streamlit_gsheets import GSheetsConnection
-            # import pandas as pd
-            # conn = st.connection("gsheets", type=GSheetsConnection)
-            # data = pd.DataFrame([registro])
-            # try:
-            #     existing_data = conn.read(worksheet="Calificaciones", ttl=5)
-            #     updated_data = pd.concat([existing_data, data], ignore_index=True)
-            #     conn.update(worksheet="Calificaciones", data=updated_data)
-            # except Exception as e:
-            #     print("Error GSheets:", e)
+            # --- INTEGRACIÓN GOOGLE SHEETS ---
+            
+            try:
+                conn = st.connection("gsheets", type=GSheetsConnection)
+                data = pd.DataFrame([registro])
+                
+                existing_data = conn.read(worksheet="Calificaciones", ttl=5)
+                # Si la hoja está totalmente vacía, 'existing_data' puede no tener columnas
+                if existing_data.empty:
+                    updated_data = data
+                else:
+                    updated_data = pd.concat([existing_data, data], ignore_index=True)
+                    
+                conn.update(worksheet="Calificaciones", data=updated_data)
+            except Exception as e:
+                print("Error GSheets:", e)
         
         porcentaje = (puntaje / total) * 100
         aprobado = puntaje >= 16
