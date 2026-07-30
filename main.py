@@ -1489,42 +1489,42 @@ def renderizar_simulador():
     datos_especies = {
         "Bovino": {
             "checklist": {"Reflejo de inmovilidad (dejarse montar)": 40, "Descarga de moco cervical claro (cristalino)": 20, "Inquietud y vocalización": 20, "Grupa o base de la cola raspada": 10, "Búsqueda del macho / intento de montar": 10},
-            "decisiones_ia": "**Regla AM/PM:** Detectado AM -> Inseminar PM. Dosis: 1 pajuela (0.5cc) en cuerpo del útero.",
+            "decisiones_ia": "<b>Regla AM/PM:</b> Detectado AM -> Inseminar PM. Dosis: 1 pajuela (0.5cc) en cuerpo del útero.",
             "estrategias_deteccion": ["Observación Visual Tradicional (~40% de éxito)", "Collares de Precisión o Podómetros (~90% de éxito)"],
             "roi_base": 150,
             "desglose_perdidas": "Incluye: Costos de alimentación por días abiertos extras, pérdida de producción lechera (o kilos al destete) y gastos de mantenimiento improductivo."
         },
         "Porcino": {
             "checklist": {"Reflejo de inmovilidad ante el verraco/presión en lomo": 40, "Orejas erguidas (paradas)": 20, "Vulva inflamada y enrojecida": 20, "Gruñidos característicos": 10, "Pérdida de apetito": 10},
-            "decisiones_ia": "**Inseminación:** A las 12-24 horas del inicio del reflejo de inmovilidad. Dosis: 80-100cc (2-3 mil millones espermatozoides).",
+            "decisiones_ia": "<b>Inseminación:</b> A las 12-24 horas del inicio del reflejo de inmovilidad. Dosis: 80-100cc (2-3 mil millones espermatozoides).",
             "estrategias_deteccion": ["Observación Visual sin Verraco (~50% de éxito)", "Detección con Verraco Marcador + Sensores (~90% de éxito)"],
             "roi_base": 50,
             "desglose_perdidas": "Incluye: Días no productivos (DNP) de la cerda, costo de ración diaria desperdiciada y reducción del índice de lechones por hembra al año."
         },
         "Ovino": {
             "checklist": {"Búsqueda activa del carnero": 40, "Movimientos rápidos de la cola (coleo)": 30, "Vulva ligeramente hiperémica": 10, "Inquietud": 10, "Reflejo de inmovilidad ante el carnero": 10},
-            "decisiones_ia": "**Inseminación:** A las 12-18 horas de detectado el celo. Dosis: Intrauterina vía laparoscópica o intracervical profunda.",
+            "decisiones_ia": "<b>Inseminación:</b> A las 12-18 horas de detectado el celo. Dosis: Intrauterina vía laparoscópica o intracervical profunda.",
             "estrategias_deteccion": ["Detección Visual sin Macho Marcador (~30% de éxito)", "Efecto Macho + Implantes de Melatonina (~80% de éxito)"],
             "roi_base": 30,
             "desglose_perdidas": "Incluye: Menor número de corderos destetados al año, gastos de suplementación alimenticia improductiva y desincronización del rebaño."
         },
         "Caprino": {
             "checklist": {"Vocalización constante (balidos)": 30, "Movimiento enérgico de la cola": 30, "Búsqueda del macho": 20, "Micción frecuente": 10, "Vulva hinchada con moco claro": 10},
-            "decisiones_ia": "**Inseminación:** A las 12-24 horas post detección. Dosis: Intracervical profunda (semen fresco/congelado).",
+            "decisiones_ia": "<b>Inseminación:</b> A las 12-24 horas post detección. Dosis: Intracervical profunda (semen fresco/congelado).",
             "estrategias_deteccion": ["Detección Visual sin Macho Marcador (~35% de éxito)", "Efecto Macho Programado + Esponjas/CIDR (~85% de éxito)"],
             "roi_base": 25,
             "desglose_perdidas": "Incluye: Días de lactancia perdidos, reducción en la cuota lechera anual y gastos de forraje en periodos secos extendidos."
         },
         "Equino": {
             "checklist": {"Postura de micción frecuente (espejeo)": 40, "Elevación de la cola": 20, "Aceptación del padrillo (orejas hacia adelante)": 20, "Contracción rítmica de la vulva": 10, "Relajación pélvica": 10},
-            "decisiones_ia": "**Inseminación:** Antes de la ovulación (folículo > 35mm por ecografía). Dosis: 10-20cc de semen fresco/refrigerado.",
+            "decisiones_ia": "<b>Inseminación:</b> Antes de la ovulación (folículo > 35mm por ecografía). Dosis: 10-20cc de semen fresco/refrigerado.",
             "estrategias_deteccion": ["Observación Conductual sin Ecografía (~45% de éxito)", "Ecografía Folicular Seriada + IA Dirigida (~90% de éxito)"],
             "roi_base": 250,
             "desglose_perdidas": "Incluye: Alta inversión en pensión/mantenimiento mensual de la yegua, devaluación comercial del potro por nacer tarde y honorarios veterinarios."
         },
         "Ave": {
             "checklist": {"Receptividad a la monta (sentadilla)": 40, "Cresta y barbillas rojas turgentes": 20, "Distancia entre huesos pélvicos (> 2 dedos)": 20, "Cloaca húmeda y dilatada": 10, "Canto o vocalización receptiva": 10},
-            "decisiones_ia": "**Manejo:** Fotoperíodo 16L:8O. IA semanal para mantener fertilidad. Dosis: 0.05cc vía intravaginal.",
+            "decisiones_ia": "<b>Manejo:</b> Fotoperíodo 16L:8O. IA semanal para mantener fertilidad. Dosis: 0.05cc vía intravaginal.",
             "estrategias_deteccion": ["Fotoperíodo Natural sin Control (~60% postura)", "Programa de Luz 16L:8O Automatizado (~85-90% postura)"],
             "roi_base": 2,
             "desglose_perdidas": "Incluye: Caída en la curva de postura (huevos no producidos), desperdicio de ración balanceada diaria y reducción del porcentaje de incubabilidad."
